@@ -4,4 +4,4 @@ sqlite
 __pycache__
 env
 venv
-SECRET_KEY
+.env

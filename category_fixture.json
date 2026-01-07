@@ -1,0 +1,42 @@
+[
+{
+    "model": "catalog.category",
+    "pk": 1,
+    "fields": {
+        "name": "Мясо",
+        "description": "Вкусное и сочное мясо"
+    }
+},
+{
+    "model": "catalog.category",
+    "pk": 2,
+    "fields": {
+        "name": "Специи",
+        "description": "различные приправы"
+    }
+},
+{
+    "model": "catalog.category",
+    "pk": 3,
+    "fields": {
+        "name": "Рыба",
+        "description": "рыбная продукция"
+    }
+},
+{
+    "model": "catalog.category",
+    "pk": 4,
+    "fields": {
+        "name": "Мясо",
+        "description": "Вкусное и сочное мясо"
+    }
+},
+{
+    "model": "catalog.category",
+    "pk": 5,
+    "fields": {
+        "name": "Рыба",
+        "description": "Рыбная продукция"
+    }
+}
+]
