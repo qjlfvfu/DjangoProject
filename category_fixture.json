@@ -38,5 +38,37 @@
         "name": "Рыба",
         "description": "Рыбная продукция"
     }
+},
+{
+    "model": "catalog.category",
+    "pk": 6,
+    "fields": {
+        "name": "Мясо",
+        "description": "Мясные продукты"
+    }
+},
+{
+    "model": "catalog.category",
+    "pk": 7,
+    "fields": {
+        "name": "Рыба",
+        "description": "Рыбные продукты"
+    }
+},
+{
+    "model": "catalog.category",
+    "pk": 8,
+    "fields": {
+        "name": "Овощи",
+        "description": "Свежие овощи"
+    }
+},
+{
+    "model": "catalog.category",
+    "pk": 9,
+    "fields": {
+        "name": "Фрукты",
+        "description": "Свежие фрукты"
+    }
 }
 ]

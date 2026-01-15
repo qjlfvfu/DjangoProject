@@ -17,13 +17,18 @@ python3 manage.py runserver `
 Она есть , перейти на страницы возможно и уже хорошо 
 ## Структура проекта
 Домашка с веб-дизайном/
-│   └── [catalog](catalog)                          # приложение
-│      ├── [templates](catalog/templates)          # папка без которой почему то нихрена не работает
-│      └── [catalog](catalog/templates/catalog)     # папка где все страницы 
+│   └── [catalog](catalog)                        # приложение
+│      ├── [templates](catalog/templates)         # папка без которой почему то нихрена не работает
+│      └── [catalog](catalog/templates/catalog)   # папка где все страницы 
+│           ├──[management](catalog/management)   # папка МЭЭЭнеджмента
+│           │      └── [commands](catalog/management/commands) # папка c командами
+│           │              └── [add_data.py](catalog/management/commands/add_data.py)      # команда добавления 
+│           │              └──[delete_data.py](catalog/management/commands/delete_data.py) # команда удаления
+│           │              └── [load_data.py](catalog/management/commands/load_data.py)    # команда загрузки через фикстуры
 │           ├── [contacts.html](catalog/templates/catalog/contacts.html)               # страница контактов
 │           ├── [home.html](catalog/templates/catalog/home.html)                       # страница Главная
 │           └── [product-catalog.html](catalog/templates/catalog/product-catalog.html) # страница Каталога товаров
-├── [config](config) # папка конфигурации приложения 
+├── [config](config) # папка конфигурации приложения
 │   ├── [urls.py](config/urls.py) маршруты
 ├── [manage.py](manage.py)                          # сервер
 ├── [requirements.txt](requirements.txt)           # Зависимости
@@ -32,4 +37,9 @@ python3 manage.py runserver `
 # Требования
 ### Python 3.8+
 ### Django 6.0+
-~~Вот и из-за этого надо было не брать работу с первого раза?~~
+
+
+
+
+
+~~говно а не ОРМ через шэлл~~

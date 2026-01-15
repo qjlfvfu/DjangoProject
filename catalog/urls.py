@@ -4,7 +4,9 @@ from . import views
 app_name = "catalog"
 
 urlpatterns = [
-    path("", views.home_open, name="home"),  # Главная: /
-    path("contacts/", views.contacts_open, name="contacts"),  # Контакты: /contacts/
-    path("catalog/", views.catalog_open, name="catalog"),
+    path('', views.home, name='home'),  # Главная страница
+    path('contacts/', views.contacts, name='contacts'),  # Контакты
+    path('catalog/', views.catalog, name='catalog'),  # Каталог товаров
+    path('product/<int:pk>/', views.product_detail, name='product_detail'),  # Детали товара
+    path('product/create/', views.product_create, name='product_create'),  # Создание товара
 ]

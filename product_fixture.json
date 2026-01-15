@@ -50,5 +50,57 @@
         "created_at": "2026-01-07T18:46:20.684Z",
         "updated_at": "2026-01-07T18:47:15.390Z"
     }
+},
+{
+    "model": "catalog.product",
+    "pk": 5,
+    "fields": {
+        "name": "Говядина",
+        "description": null,
+        "picture": "",
+        "category": 6,
+        "price": 500,
+        "created_at": "2026-01-07T21:15:31.095Z",
+        "updated_at": "2026-01-07T21:15:31.095Z"
+    }
+},
+{
+    "model": "catalog.product",
+    "pk": 6,
+    "fields": {
+        "name": "Свинина",
+        "description": null,
+        "picture": "",
+        "category": 6,
+        "price": 450,
+        "created_at": "2026-01-07T21:15:31.095Z",
+        "updated_at": "2026-01-07T21:15:31.095Z"
+    }
+},
+{
+    "model": "catalog.product",
+    "pk": 7,
+    "fields": {
+        "name": "Лосось",
+        "description": null,
+        "picture": "",
+        "category": 7,
+        "price": 800,
+        "created_at": "2026-01-07T21:15:31.095Z",
+        "updated_at": "2026-01-07T21:15:31.095Z"
+    }
+},
+{
+    "model": "catalog.product",
+    "pk": 8,
+    "fields": {
+        "name": "Форель",
+        "description": null,
+        "picture": "",
+        "category": 7,
+        "price": 600,
+        "created_at": "2026-01-07T21:15:31.095Z",
+        "updated_at": "2026-01-07T21:15:31.095Z"
+    }
 }
 ]
