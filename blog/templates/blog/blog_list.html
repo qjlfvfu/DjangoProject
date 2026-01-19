@@ -1,0 +1,65 @@
+
+{% extends 'blog/base-blog.html' %}
+
+{% block title %}Статьи блога{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Статьи блога</h1>
+    
+    <!-- Статистика -->
+    <div class="alert alert-info">
+        <i class="fas fa-chart-bar"></i>
+        Показано {{ blogs|length }} из {{ total_all }} статей 
+        ({{ total_published }} опубликовано)
+    </div>
+    
+    <!-- Список статей -->
+    <div class="row">
+        {% for blog in blogs %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                {% if blog.preview %}
+                <img src="{{ blog.preview.url }}" class="card-img-top" 
+                     alt="{{ blog.name }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                
+                <div class="card-body">
+                    <h5 class="card-title">{{ blog.name }}</h5>
+                    
+                    <!-- Статус публикации -->
+                    {% if blog.is_published %}
+                    <span class="badge bg-success mb-2">Опубликовано</span>
+                    {% else %}
+                    <span class="badge bg-secondary mb-2">Черновик</span>
+                    {% endif %}
+                    
+                    <p class="card-text">
+                        {{ blog.description|truncatechars:150 }}
+                    </p>
+                    
+                    <div class="text-muted small">
+                        <i class="fas fa-eye"></i> {{ blog.views_count }} просмотров • 
+                        <i class="fas fa-calendar"></i> {{ blog.created_at|date:"d.m.Y" }}
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <a href="{% url 'blog:blog_detail' blog.pk %}" 
+                       class="btn btn-outline-primary btn-sm">
+                        Читать далее
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Нет опубликованных статей.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

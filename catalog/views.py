@@ -1,122 +1,111 @@
+from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
+from django.urls import reverse_lazy
+from django.views.generic import DetailView, ListView, TemplateView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView
+
 from .models import Product, Category
 
 
-def home(request):
+class HomeView(TemplateView):
     """Главная страница"""
-    return render(request, "catalog/home.html")
+    template_name = "catalog/home.html"
 
 
-# Функция для контактов
-def contacts(request):
+
+class ContactsView(TemplateView):
     """Страница контактов"""
-    return render(request, "catalog/contacts.html")
+    template_name = "catalog/contacts.html"
 
 
 # Функция для каталога
-def catalog(request):
-    """Страница каталога товаров"""
-    products = Product.objects.all().order_by('-created_at')
-
-    # Пагинация
-    paginator = Paginator(products, 6)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'page_obj': page_obj,
-    }
-    return render(request, 'catalog/product-catalog.html', context)
+class CatalogView(ListView):
+    model = Product
+    paginate_by = 6
+    template_name = "catalog/product-catalog.html"
+    context_object_name = "products"
+    ordering = ["-created_at"] # Сортировка по дате создания
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Добавляем пагинатор в контекст
+        paginator = Paginator(self.get_queryset(), self.paginate_by)
+        page_number = self.request.GET.get('page')
+        context['page_obj'] = paginator.get_page(page_number)
+        return context
 
 
 # Функция для детальной страницы товара
-def product_detail(request, pk):
+class ProductDetailView(DetailView):
     """Страница с подробной информацией о товаре"""
-    product = get_object_or_404(Product, pk=pk)
-    context = {
-        'product': product,
-    }
-    return render(request, 'catalog/product_detail.html', context)
+    model = Product
+    template_name = "catalog/product_detail.html"
+    context_object_name = "products"
+    def get_context_data(self,**kwargs):
+        context =super().get_context_data(**kwargs)
+        return context
 
 
 # Функция для добавления товара
-def product_create(request):
+class ProductCreate(CreateView):
     """Страница с формой для добавления нового товара"""
+    model = Product
+    fields = ["name","description",]
+    template_name = "catalog/product_form.html"
+    success_url = reverse_lazy('catalog')
 
-    # Получаем все категории для выпадающего списка
-    categories = Category.objects.all()
+    def form_valid(self, form):
+        """Действия при успешной валидации формы"""
+        response = super().form_valid(form)
+        messages.success(self.request, f'Товар "{form.instance.name}" успешно создан!')
+        return response
 
-    if request.method == 'POST':
-        # Получаем данные из формы
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        price = request.POST.get('price')
-        category_id = request.POST.get('category')
-        picture = request.FILES.get('picture')
+    def form_invalid(self, form):
+        """Действия при ошибке валидации"""
+        messages.error(self.request, 'Пожалуйста, исправьте ошибки в форме.')
+        return super().form_invalid(form)
 
-        # Проверяем обязательные поля
-        if not name or not price or not category_id:
-            # Если не все обязательные поля заполнены
-            error_message = "Заполните все обязательные поля: название, цена и категория"
-            return render(request, 'catalog/product_form.html', {
-                'categories': categories,
-                'error': error_message,
-                'form_data': {  # Сохраняем введенные данные для повторного показа
-                    'name': name,
-                    'description': description,
-                    'price': price,
-                    'category_id': category_id,
-                }
-            })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Добавляем категории для выпадающего списка
+        context['categories'] = Category.objects.all()
+        return context
 
-        try:
-            # Пытаемся получить категорию
-            category = Category.objects.get(id=category_id)
 
-            # Создаем новый продукт
-            product = Product.objects.create(
-                name=name,
-                description=description,
-                price=price,
-                category=category,
-                picture=picture
-            )
+class ProductUpdateView(UpdateView):
+    model = Product
+    template_name = "catalog/product_form.html"
 
-            # Успешное создание
-            messages.success(request, f'Товар "{name}" успешно создан!')
-            return redirect('catalog:catalog')  # Убедитесь, что используете правильное имя маршрута
 
-        except Category.DoesNotExist:
-            # Если категория не найдена
-            error_message = "Выбранная категория не найдена"
-            return render(request, 'catalog/product_form.html', {
-                'categories': categories,
-                'error': error_message,
-                'form_data': {
-                    'name': name,
-                    'description': description,
-                    'price': price,
-                    'category_id': category_id,
-                }
-            })
-        except ValueError as e:
-            # Ошибка валидации (например, цена не число)
-            error_message = f"Ошибка в данных: {str(e)}"
-            return render(request, 'catalog/product_form.html', {
-                'categories': categories,
-                'error': error_message,
-                'form_data': {
-                    'name': name,
-                    'description': description,
-                    'price': price,
-                    'category_id': category_id,
-                }
-            })
+class ProductDeleteView(DeleteView):
+    """Удаление товара"""
+    model = Product
+    template_name = 'catalog/product_delete.html'
+    success_url = reverse_lazy('catalog')
 
-    else:
-        # GET запрос - показываем пустую форму
-        context = {
-            'categories': categories,
-        }
-        return render(request, 'catalog/product_form.html', context)
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, f'Товар успешно удален!')
+        return super().delete(request, *args, **kwargs)
+
+
+class CategoryListView(ListView):
+    """Список всех категорий"""
+    model = Category
+    template_name = 'catalog/category_list.html'
+    context_object_name = 'categories'
+    ordering = ['name']
+
+
+class CategoryDetailView(DetailView):
+    """Детали категории с товарами"""
+    model = Category
+    template_name = 'catalog/category_detail.html'
+    context_object_name = 'category'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Добавляем товары этой категории
+        context['products'] = self.object.product_set.all()
+        return context
+
+

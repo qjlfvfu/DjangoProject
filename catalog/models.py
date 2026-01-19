@@ -1,4 +1,6 @@
 from django.db import models
+from django.template.defaultfilters import title
+
 
 class Category(models.Model):
     objects = None
@@ -17,11 +19,11 @@ class Product(models.Model):
     objects = None
     name=models.CharField(max_length=100,verbose_name="Наименование товара",unique=True)
     description=models.TextField(null=True,verbose_name="Описание")
-    picture=models.ImageField(upload_to="image/",verbose_name="изображение",null=True)
+    picture=models.ImageField(upload_to="image/",verbose_name="Изображение",null=True)
     category=models.ForeignKey(Category,on_delete=models.PROTECT,related_name="Товар")
-    price=models.IntegerField(verbose_name="цена")
-    created_at=models.DateTimeField(auto_now_add=True,verbose_name="дата создания")
-    updated_at=models.DateTimeField(auto_now=True,verbose_name="дата последнего изменения")
+    price=models.IntegerField(verbose_name="Цена")
+    created_at=models.DateTimeField(auto_now_add=True,verbose_name="Дата создания")
+    updated_at=models.DateTimeField(auto_now=True,verbose_name="Дата последнего изменения")
     def __str__(self):
         return f"""
         {self.id}
@@ -33,5 +35,5 @@ class Product(models.Model):
     class Meta:
         verbose_name = "Товар"
         verbose_name_plural = "Товары"
-        ordering = ['category'] # Сортировка по категории
+        ordering = ['-category'] # Сортировка по категории
 
