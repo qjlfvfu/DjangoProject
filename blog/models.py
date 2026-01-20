@@ -9,6 +9,7 @@ class Blog(models.Model):
     """Модель блоговой записи"""
 
     # Обязательные поля по заданию
+    objects = None
     name = models.CharField(
         max_length=50, verbose_name="Заголовок", help_text="Введите заголовок статьи"
     )
