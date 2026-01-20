@@ -135,4 +135,4 @@ class Blog(models.Model):
         """Возвращает укороченное описание (первые 100 символов)"""
         if len(self.description) > 100:
             return self.description[:100] + "..."
-        return self.descriptio
+        return self.description
