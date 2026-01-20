@@ -1,10 +1,6 @@
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import models
-from django.db.models import CharField
-
-
-# Create your models here.
 from django.template.defaultfilters import slugify
 from django.urls import reverse
 
@@ -14,40 +10,34 @@ class Blog(models.Model):
 
     # Обязательные поля по заданию
     name = models.CharField(
-        max_length=50,
-        verbose_name="Заголовок",
-        help_text="Введите заголовок статьи"
+        max_length=50, verbose_name="Заголовок", help_text="Введите заголовок статьи"
     )
 
     description = models.TextField(
-        verbose_name="Содержимое",
-        help_text="Введите содержимое статьи"
+        verbose_name="Содержимое", help_text="Введите содержимое статьи"
     )
 
     preview = models.ImageField(
-        upload_to='blog/previews/%Y/%m/%d/',
+        upload_to="blog/previews/%Y/%m/%d/",
         verbose_name="Превью",
         null=True,
         blank=True,
-        help_text="Загрузите изображение для превью"
+        help_text="Загрузите изображение для превью",
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Дата создания"
-    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     is_published = models.BooleanField(
         default=False,
         verbose_name="Признак публикации",
-        help_text="Отметьте для публикации статьи"
+        help_text="Отметьте для публикации статьи",
     )
 
     views_count = models.PositiveIntegerField(
         default=0,
         verbose_name="Количество просмотров",
         help_text="Количество просмотров статьи",
-        editable=False
+        editable=False,
     )
 
     slug = models.SlugField(
@@ -55,17 +45,17 @@ class Blog(models.Model):
         unique=True,
         blank=True,
         verbose_name="URL",
-        help_text="Автоматически заполняется из заголовка"
+        help_text="Автоматически заполняется из заголовка",
     )
 
     class Meta:
         verbose_name = "Блоговая запись"
         verbose_name_plural = "Блоговые записи"
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['slug']),
-            models.Index(fields=['created_at']),
-            models.Index(fields=['is_published']),
+            models.Index(fields=["slug"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["is_published"]),
         ]
 
     def __str__(self):
@@ -88,7 +78,7 @@ class Blog(models.Model):
 
     def get_absolute_url(self):
         """URL для детального просмотра"""
-        return reverse('blog:blog_detail', kwargs={'slug': self.slug})
+        return reverse("blog:blog_detail", kwargs={"slug": self.slug})
 
     def increment_views(self):
         """Увеличивает счетчик просмотров на 1 и проверяет достижение 100 просмотров"""
@@ -96,7 +86,7 @@ class Blog(models.Model):
         self.views_count += 1
 
         # Сохраняем и проверяем достижение 100 просмотров
-        self.save(update_fields=['views_count'])
+        self.save(update_fields=["views_count"])
 
         # Отправляем email при достижении 100 просмотров
         if old_views < 100 and self.views_count >= 100:
@@ -128,6 +118,7 @@ class Blog(models.Model):
         except Exception as e:
             # Логируем ошибку, но не прерываем выполнение
             import logging
+
             logger = logging.getLogger(__name__)
             logger.error(f"Ошибка отправки email: {e}")
 
@@ -143,5 +134,5 @@ class Blog(models.Model):
     def short_description(self):
         """Возвращает укороченное описание (первые 100 символов)"""
         if len(self.description) > 100:
-            return self.description[:100] + '...'
+            return self.description[:100] + "..."
         return self.descriptio

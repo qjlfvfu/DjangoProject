@@ -6,7 +6,7 @@ try:
         user="postgres",
         password="NIK",
         host="localhost",
-        port="5432"
+        port="5432",
     )
     print("✅ Подключение к PostgreSQL успешно!")
     conn.close()
