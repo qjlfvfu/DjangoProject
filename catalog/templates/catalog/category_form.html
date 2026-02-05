@@ -1,0 +1,79 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}
+    {% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} категории - Skystore
+{% endblock %}
+
+{% block header %}
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">
+        {% if form.instance.pk %}Редактирование категории{% else %}Создание новой категории{% endif %}
+    </h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mb-4 box-shadow">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Вывод общих ошибок формы -->
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Поле: Название категории -->
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">
+                                Название категории
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.name.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Введите название категории (минимум 2 символа)</div>
+                        </div>
+
+                        <!-- Поле: Описание категории -->
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">
+                                Описание категории
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.description.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Введите описание категории (необязательно)</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-lg btn-primary">
+                                {% if form.instance.pk %}Сохранить изменения{% else %}Создать категорию{% endif %}
+                            </button>
+                            <a href="{% url 'catalog:category_list' %}" class="btn btn-lg btn-outline-secondary">
+                                Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

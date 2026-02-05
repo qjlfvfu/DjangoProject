@@ -27,7 +27,7 @@ python3 manage.py runserver `
 │           │              └── [load_data.py](catalog/management/commands/load_data.py)    # команда загрузки через фикстуры
 │           ├── [contacts.html](catalog/templates/catalog/contacts.html)               # страница контактов
 │           ├── [home.html](catalog/templates/catalog/home.html)                       # страница Главная
-│           └── [product-catalog.html](catalog/templates/catalog/product-catalog.html) # страница Каталога товаров
+│           └── [product-catalog.html](catalog/templates/catalog/product_catalog.html) # страница Каталога товаров
 ├── [config](config) # папка конфигурации приложения
 │   ├── [urls.py](config/urls.py) маршруты
 ├── [manage.py](manage.py)                          # сервер

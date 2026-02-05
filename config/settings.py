@@ -82,7 +82,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "Django/SQL",
+        "NAME": "django_db",
         "USER": os.getenv("DATABASES_USER"),
         "PASSWORD": os.getenv("DATABASES_PASSWORD"),
         "HOST": os.getenv("DATABASES_HOST", "localhost"),
@@ -129,6 +129,9 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+MEDIA_URL = '/media/'  # URL для доступа к медиа файлам
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Папка для хранения файлов
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

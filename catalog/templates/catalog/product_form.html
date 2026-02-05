@@ -58,18 +58,35 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="{{ form.picture.id_for_label }}" class="form-label">
-                                {{ form.picture.label }}
-                            </label>
+                            <label for="id_picture" class="form-label">Изображение товара</label>
                             {{ form.picture }}
-                            {% if form.picture.errors %}
-                            <div class="text-danger">{{ form.picture.errors }}</div>
+
+                            {% if form.instance.picture %}
+                            <div class="mt-2">
+                                <p>Текущее изображение:</p>
+                                <img src="{{ form.instance.picture.url }}"
+                                     alt="{{ form.instance.name }}"
+                                     class="img-thumbnail"
+                                     style="max-height: 150px;">
+                            </div>
                             {% endif %}
+
+                            {% if form.picture.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.picture.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <div class="form-text">
+                                Загрузите изображение товара (рекомендуемый размер: 800x600px)
+                            </div>
                         </div>
-                        
+
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-lg btn-primary">Сохранить товар</button>
-                            <a href="{% url 'catalog:catalog' %}" class="btn btn-lg btn-outline-secondary">Отмена</a>
+                            <a href="{% url 'catalog:product_catalog' %}" class="btn btn-lg btn-outline-secondary">Отмена</a>
                         </div>
                     </form>
                 </div>
