@@ -13,24 +13,21 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os.path
 from pathlib import Path
 
-from dotenv import load_dotenv
-
-load_dotenv()
+# from dotenv import load_dotenv
+#
+# load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# SECRET_KEY = os.getenv("SECRET_KEY")
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-
-DEBUG = True if os.getenv("DEBUG") == "True" else False
+# DEBUG = True if os.getenv("DEBUG") == "True" else False
 
 hosts_str = os.getenv("ALLOWED_HOSTS", "localhost")
-# Разбиваем строку по запятым и создаем список
-ALLOWED_HOSTS = [host.strip() for host in hosts_str.split(",") if host.strip()]
+
+# ALLOWED_HOSTS = [host.strip() for host in hosts_str.split(",") if host.strip()]
 
 
 # Application definition
@@ -44,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "catalog",
     "blog",
+    "botblock",
 ]
 
 MIDDLEWARE = [
@@ -55,6 +53,16 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+AUTH_USER_MODEL = 'botblock.CustomUser'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_PORT = 465
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD =os.getenv ("DATABASES_PASSWORD")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 ROOT_URLCONF = "config.urls"
 
@@ -79,17 +87,27 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": "django_db",
+#         "USER": os.getenv("DATABASES_USER","postgres"),
+#         "PASSWORD": os.getenv("DATABASES_PASSWORD"),
+#         "HOST": os.getenv("DATABASES_HOST", "localhost"),
+#         "PORT": os.getenv("DATABASES_PORT", "5432"),
+#     }
+# }
+SECRET_KEY = 'django-insecure-your-secret-key-here-1234567890'
+DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# ИСПОЛЬЗУЙТЕ SQLITE:
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "django_db",
-        "USER": os.getenv("DATABASES_USER"),
-        "PASSWORD": os.getenv("DATABASES_PASSWORD"),
-        "HOST": os.getenv("DATABASES_HOST", "localhost"),
-        "PORT": os.getenv("DATABASES_PORT", "5432"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

@@ -24,6 +24,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("catalog.urls")),
     path("blog/", include("blog.urls")),
+    path("botblock/",include("botblock.urls")),
 ]
 
 if settings.DEBUG:

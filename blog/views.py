@@ -19,7 +19,6 @@ class BlogListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        # ✅ Только опубликованные статьи
         return Blog.objects.filter(is_published=True).order_by("-created_at")
 
 
@@ -30,18 +29,15 @@ class BlogDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # ✅ Увеличение счетчика просмотров
         self.object.views_count += 1
         self.object.save(update_fields=["views_count"])
         return context
 
     def get_object(self, queryset=None):
         """Получаем объект и увеличиваем счетчик просмотров АТОМАРНО"""
-        # Получаем объект стандартным способом
         obj = super().get_object(queryset)
         Blog.objects.filter(pk=obj.pk).update(views_count=F("views_count") + 1)
 
-        # Обновляем объект из базы данных
         obj.refresh_from_db()
 
         return obj
