@@ -23,6 +23,20 @@ class RegisterView(CreateView):
     success_url = reverse_lazy('botblock:login')
 
     def form_valid(self, form):
+        # ✅ Автоматически создаем username, если он не указан
+        if not form.cleaned_data.get('username'):
+            email = form.cleaned_data.get('email')
+            # Берем часть email до @
+            base_username = email.split('@')[0]
+            username = base_username
+
+            counter = 1
+            while CustomUser.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            form.instance.username = username
+
         response = super().form_valid(form)
         user = form.save()
 
@@ -30,14 +44,9 @@ class RegisterView(CreateView):
         try:
             send_welcome_email(user)
             messages.success(
-                self.request,
-                _('Регистрация успешна! На ваш email отправлено приветственное письмо.')
-            )
+                self.request,_('Регистрация успешна! На ваш email отправлено приветственное письмо.'))
         except Exception as e:
-            messages.warning(
-                self.request,
-                _('Регистрация успешна, но не удалось отправить приветственное письмо.')
-            )
+            messages.warning(self.request,_('Регистрация успешна, но не удалось отправить приветственное письмо.'))
 
         return response
 

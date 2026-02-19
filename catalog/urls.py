@@ -15,5 +15,5 @@ urlpatterns = [
     path("category/list/",views.CategoryListView.as_view(),name="category_list"), # Список категорий
     path("category/<int:pk>/",views.CategoryDetailView.as_view(),name="category_detail"),
     path("category/<int:pk>/delete/",views.CategoryDeleteView.as_view(),name="category_delete"),
-    # path("category/update")
+    # path("category/update/int:pk/update",views/ProductUpdateView.as_view(),name="product_form"),
 ]

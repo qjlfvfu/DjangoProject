@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-8">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">{% trans 'Регистрация' %}</h4>
@@ -14,7 +14,7 @@
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
-                        
+
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger">
                             {% for error in form.non_field_errors %}
@@ -22,7 +22,8 @@
                             {% endfor %}
                         </div>
                         {% endif %}
-                        
+
+                        <!-- Email (обязательное поле) -->
                         <div class="mb-3">
                             <label for="id_email" class="form-label">{% trans 'Email' %} *</label>
                             {{ form.email }}
@@ -34,7 +35,63 @@
                             </div>
                             {% endif %}
                         </div>
-                        
+
+                        <!-- Username (необязательное поле) -->
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">{% trans 'Имя пользователя' %}</label>
+                            {{ form.username }}
+                            <div class="form-text">
+                                {% trans 'Если не указано, будет создано автоматически из email' %}
+                            </div>
+                            {% if form.username.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.username.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Имя (необязательное поле) -->
+                        <div class="mb-3">
+                            <label for="id_first_name" class="form-label">{% trans 'Имя' %}</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.first_name.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Фамилия (необязательное поле) -->
+                        <div class="mb-3">
+                            <label for="id_last_name" class="form-label">{% trans 'Фамилия' %}</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.last_name.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Телефон (необязательное поле) -->
+                        <div class="mb-3">
+                            <label for="id_phone" class="form-label">{% trans 'Телефон' %}</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.phone.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Пароль (обязательное поле) -->
                         <div class="mb-3">
                             <label for="id_password1" class="form-label">{% trans 'Пароль' %} *</label>
                             {{ form.password1 }}
@@ -49,7 +106,8 @@
                                 {% trans 'Пароль должен содержать минимум 8 символов.' %}
                             </div>
                         </div>
-                        
+
+                        <!-- Подтверждение пароля (обязательное поле) -->
                         <div class="mb-3">
                             <label for="id_password2" class="form-label">{% trans 'Подтверждение пароля' %} *</label>
                             {{ form.password2 }}

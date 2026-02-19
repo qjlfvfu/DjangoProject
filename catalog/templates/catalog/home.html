@@ -25,46 +25,76 @@
     <div class="row text-center">
         {% for product in products %}
         <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-            <div class="card mb-4 box-shadow">
-                <!-- Изображение товара -->
-                <div class="card-img-top text-center p-3" style="height: 200px; overflow: hidden;">
-                    {% if product.picture %}
-                    <img src="{{ product.picture.url }}"
-                         alt="{{ product.name }}"
-                         class="img-fluid"
-                         style="max-height: 150px; object-fit: contain;">
+    <div class="card mb-4 box-shadow">
+        <!-- Изображение товара -->
+        <div class="card-img-top text-center p-3" style="height: 200px; overflow: hidden;">
+            {% if product.picture %}
+            <img src="{{ product.picture.url }}"
+                 alt="{{ product.name }}"
+                 class="img-fluid"
+                 style="max-height: 150px; object-fit: contain;">
+            {% else %}
+            <div class="bg-light rounded d-flex align-items-center justify-content-center h-100">
+                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card-body d-flex flex-column">
+            <h4 class="my-0 font-weight-normal">{{ product.name|truncatechars:30 }}</h4>
+            <h5 class="card-title pricing-card-title mt-2">{{ product.price }} руб.</h5>
+
+            <p class="card-text text-muted small">{{ product.description|truncatechars:50 }}</p>
+
+            <!-- Информация о владельце -->
+            <p class="text-muted small mb-2">
+                <i class="bi bi-person"></i>
+                {% if product.owner %}
+                    {{ product.owner.email|truncatechars:15 }}
+                    {% if product.owner == user %}
+                        <span class="badge bg-info">Вы</span>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">Нет владельца</span>
+                {% endif %}
+            </p>
+
+            <div class="mt-auto">
+                <p class="text-muted small mb-2">
+                    <i class="bi bi-tag"></i> {{ product.category.name }}
+                </p>
+
+                <!-- Кнопки действий -->
+                <div class="d-flex gap-2">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'catalog:product_detail' product.pk %}"
+                       class="btn btn-sm btn-outline-primary flex-grow-1">
+                        Подробнее
+                    </a>
+
+                    <!-- Кнопки редактирования/удаления только для владельца или модератора -->
+                    {% if user == product.owner or user.is_staff %}
+                    <a href="{% url 'catalog:product_detail' product.pk %}"
+                       class="btn btn-sm btn-outline-warning">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'catalog:product_delete' product.pk %}"
+                       class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                    {% endif %}
+
                     {% else %}
-                    <div class="bg-light rounded d-flex align-items-center justify-content-center h-100">
-                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                    </div>
+                    <a href="{% url 'botblock:login' %}?next={% url 'catalog:product_detail' product.pk %}"
+                       class="btn btn-sm btn-outline-secondary w-100">
+                        <i class="bi bi-lock"></i> Войти
+                    </a>
                     {% endif %}
                 </div>
-
-                <div class="card-body d-flex flex-column">
-                    <h4 class="my-0 font-weight-normal">{{ product.name|truncatechars:30 }}</h4>
-                    <h5 class="card-title pricing-card-title mt-2">{{ product.price }} руб.</h5>
-
-                    <p class="card-text text-muted small">{{ product.description|truncatechars:50 }}</p>
-
-                    <div class="mt-auto">
-                        <p class="text-muted small mb-2">
-                            <i class="bi bi-tag"></i> {{ product.category.name }}
-                        </p>
-
-                        {% if user.is_authenticated %}
-                        <a href="{% url 'catalog:product_detail' product.pk %}"
-                           class="btn btn-lg btn-block btn-outline-primary">
-                            Подробнее
-                        </a>
-                        {% else %}
-                        <a href="{% url 'botblock:login' %}?next={% url 'catalog:product_detail' product.pk %}"
-                           class="btn btn-lg btn-block btn-outline-secondary">
-                            <i class="bi bi-lock"></i> Войдите для просмотра
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
             </div>
+        </div>
+    </div>
+</div>
         </div>
         {% empty %}
         <div class="col-12">

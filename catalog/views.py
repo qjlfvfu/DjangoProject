@@ -68,8 +68,11 @@ class ProductCreate(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         """Действия при успешной валидации формы"""
+        # Привязываем товар к текущему пользователю
         if hasattr(form.instance, 'owner') and self.request.user.is_authenticated:
             form.instance.owner = self.request.user
+            print(f"✅ Товар будет привязан к: {self.request.user.email}")  # для отладки
+
         response = super().form_valid(form)
         messages.success(self.request, f'Товар "{form.instance.name}" успешно создан!')
         return response
@@ -79,9 +82,16 @@ class ProductCreate(LoginRequiredMixin, CreateView):
         messages.error(self.request, "Пожалуйста, исправьте ошибки в форме.")
         return super().form_invalid(form)
 
+    def dispatch(self, request, *args, **kwargs):
+        """Проверка авторизации перед созданием"""
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
+        return super().dispatch(request, *args, **kwargs)
+
 
 class ProductUpdateView(LoginRequiredMixin, UpdateView):
-    """Редактирование товара - только для авторизованного пользователя"""
+    """Редактирование товара - только для владельца или staff"""
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
@@ -91,6 +101,21 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy("catalog:product_detail", kwargs={"pk": self.object.pk})
 
+    def dispatch(self, request, *args, **kwargs):
+        """Проверка прав доступа перед редактированием"""
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
+        # Получаем объект для проверки прав
+        self.object = self.get_object()
+
+        # Проверяем права: владелец ИЛИ staff
+        if self.object.owner and self.object.owner != request.user and not request.user.is_staff:
+            messages.error(request, "❌ У вас нет прав для редактирования этого товара!")
+            return redirect('catalog:product_detail', pk=self.object.pk)
+
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, f'Товар "{form.instance.name}" успешно обновлен!')
@@ -98,7 +123,7 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class ProductDeleteView(LoginRequiredMixin, DeleteView):
-    """Удаление товара - только для авторизованного пользователя"""
+    """Удаление товара - только для владельца или staff"""
     model = Product
     template_name = "catalog/product_delete.html"
     login_url = '/botblock/login/'
@@ -106,6 +131,21 @@ class ProductDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("catalog:product_catalog")
+
+    def dispatch(self, request, *args, **kwargs):
+        """Проверка прав доступа перед удалением"""
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
+        # Получаем объект для проверки прав
+        self.object = self.get_object()
+
+        # Проверяем права: владелец ИЛИ staff
+        if self.object.owner and self.object.owner != request.user and not request.user.is_staff:
+            messages.error(request, "❌ У вас нет прав для удаления этого товара!")
+            return redirect('catalog:product_detail', pk=self.object.pk)
+
+        return super().dispatch(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         product = self.get_object()

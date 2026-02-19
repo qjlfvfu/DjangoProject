@@ -8,6 +8,17 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
+
+        # АВТОМАТИЧЕСКИ СОЗДАЕМ USERNAME из email больше никак не вышло
+        if 'username' not in extra_fields or not extra_fields.get('username'):
+            # Берем часть email до @ и убираем спецсимволы
+            username = email.split('@')[0]
+            # Убираем точки, дефисы и т.д.
+            username = ''.join(c for c in username if c.isalnum())
+            if not username:
+                username = f"user_{email[:8].replace('@', '')}"
+            extra_fields['username'] = username
+
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -16,6 +27,7 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
@@ -23,7 +35,6 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
 
         return self.create_user(email, password, **extra_fields)
-
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)

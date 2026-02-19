@@ -6,38 +6,63 @@ from .models import Product, Category
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'picture', 'category']
+        fields = ['name', 'description', 'price', 'picture', 'category','is_active']
         labels = {
             'name': 'Название товара',
             'description': 'Описание товара',
             'category': 'Категория',
             'price': 'Цена',
             'picture': 'Изображение',
+
         }
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
         }
 
-    # Задание 1: Список запрещенных слов
     BAD_WORDS = ('казино', 'криптовалюта', 'крипта', 'биржа', 'дешево',
                  'бесплатно', 'обман', 'полиция', 'радар')
 
-    # Задание 3: Стилизация форм
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Стилизация всех полей
         for field_name, field in self.fields.items():
+            # Базовые классы для всех полей
+            css_class = 'form-control'
+
+            # Специальные классы для разных типов полей
             if field_name == 'description':
                 field.widget.attrs.update({
-                    'class': 'form-control',
-                    'placeholder': 'Введите описание товара...'
+                    'class': css_class,
+                    'placeholder': 'Введите подробное описание товара...',
+                    'rows': 4
                 })
             elif field_name == 'picture':
                 field.widget.attrs.update({
-                    'class': 'form-control'
+                    'class': 'form-control',
+                    'accept': 'image/*'  # Только изображения
+                })
+            elif field_name == 'is_active':
+                # Чекбокс имеет другой класс
+                field.widget.attrs.update({
+                    'class': 'form-check-input',
+                    'role': 'switch'
+                })
+            elif field_name == 'category':
+                field.widget.attrs.update({
+                    'class': 'form-select',  # Для выпадающего списка
+                    'placeholder': f'Выберите {field.label.lower()}...'
+                })
+            elif field_name == 'price':
+                field.widget.attrs.update({
+                    'class': css_class,
+                    'placeholder': 'Введите цену в рублях...',
+                    'step': '0.01',  # Для DecimalField
+                    'min': '0'
                 })
             else:
                 field.widget.attrs.update({
-                    'class': 'form-control',
+                    'class': css_class,
                     'placeholder': f'Введите {field.label.lower()}...'
                 })
 
@@ -105,7 +130,6 @@ class CategoryForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 3}),
         }
 
-    # Задание 3: Стилизация форм
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():

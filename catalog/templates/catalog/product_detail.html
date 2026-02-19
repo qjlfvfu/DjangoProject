@@ -50,17 +50,57 @@
                         </div>
                     </div>
 
+                    <!-- Информация о владельце (исправлено форматирование) -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Владелец:</strong></p>
+                            <p>
+                                {% if product.owner %}
+                                    <span class="badge bg-secondary">{{ product.owner.email }}</span>
+                                    {% if product.owner == user %}
+                                        <span class="badge bg-success">Это вы</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-warning">Не указан</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Статус:</strong></p>
+                            <p>
+                                {% if product.is_published %}
+                                    <span class="badge bg-success">Опубликован</span>
+                                {% else %}
+                                    <span class="badge bg-warning">На модерации</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки действий - ТОЛЬКО ДЛЯ ВЛАДЕЛЬЦА ИЛИ МОДЕРАТОРА -->
                     <div class="d-grid gap-2 d-md-flex">
-                        <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-warning me-2">
-                            Редактировать
-                        </a>
-                        <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-danger me-2">
-                            Удалить
-                        </a>
-                        <a href="{% url 'catalog:catalog' %}" class="btn btn-outline-secondary">
-                            Вернуться в каталог
+                        {% if user == product.owner or user.is_staff %}
+                            <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-warning me-2">
+                                <i class="bi bi-pencil"></i> Редактировать
+                            </a>
+                            <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-danger me-2">
+                                <i class="bi bi-trash"></i> Удалить
+                            </a>
+                        {% endif %}
+
+                        <!-- Кнопка "Вернуться в каталог" доступна всем -->
+                        <a href="{% url 'catalog:product_catalog' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Вернуться в каталог
                         </a>
                     </div>
+
+                    <!-- Сообщение для неавторизованных или невладельцев -->
+                    {% if user.is_authenticated and user != product.owner and not user.is_staff %}
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle"></i>
+                        Вы не можете редактировать этот товар, так как не являетесь его владельцем.
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
