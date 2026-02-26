@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.urls import reverse_lazy, reverse
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView
 from django.views.generic.edit import CreateView, DeleteView
 from .forms import CategoryForm, ProductForm
@@ -8,7 +10,8 @@ from .models import Category, Product
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
+from django.core.cache import cache
 
 # Импортируем модель пользователя
 from django.contrib.auth import get_user_model
@@ -22,9 +25,15 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Получаем первые 8 товаров для главной страницы
+
+        products = cache.get('home_products')
+        if not products:
+            products = Product.objects.filter(is_published=True)[:10]
+            cache.set('home_products', products, 60 * 15)
+
         context['products'] = Product.objects.all().order_by('-created_at')[:8]
         return context
+
 
 
 class ContactsView(TemplateView):
@@ -40,6 +49,13 @@ class CatalogView(ListView):
     context_object_name = "products"
     ordering = ["-created_at"]
 
+    def get_queryset(self):
+        queryset = cache.get('qwerty')
+        if not queryset:
+            queryset = super().get_queryset()
+            cache.set('qwerty', queryset, 60 * 15)  # Кешируем данные на 15 минут
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         paginator = Paginator(self.get_queryset(), self.paginate_by)
@@ -48,6 +64,9 @@ class CatalogView(ListView):
         return context
 
 
+
+
+@method_decorator(cache_page(60 * 30), name='dispatch')
 class ProductDetailView(LoginRequiredMixin, DetailView):
     """Страница с подробной информацией о товаре - только для авторизованных"""
     model = Product
@@ -155,6 +174,34 @@ class ProductDeleteView(LoginRequiredMixin, DeleteView):
 
 
 # ===== КАТЕГОРИИ =====
+@method_decorator(cache_page(60 * 120), name='dispatch')
+class CategoryProductsView(ListView):
+    """Список продуктов в указанной категории"""
+    model = Product
+    template_name = "catalog/category_products.html"
+    context_object_name = "products"
+    paginate_by = 6
+
+    def get_queryset(self):
+        # Получаем категорию по ID из URL
+        self.category = get_object_or_404(Category, id=self.kwargs['category_id'])
+        print(f"Категория: {self.category.name}, ID: {self.category.id}")
+
+        # Получаем все товары этой категории (без фильтрации)
+        queryset = Product.objects.filter(category=self.category)
+        print(f"Найдено товаров: {queryset.count()}")
+
+        # Для отладки выведем все товары
+        for product in queryset:
+            print(f"  - {product.name}, активный: {product.is_active}, опубликован: {product.is_published}")
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        return context
+
 
 class CategoryListView(ListView):
     """Список категорий - доступен всем"""
@@ -163,6 +210,27 @@ class CategoryListView(ListView):
     context_object_name = "categories"
     ordering = ["name"]
 
+    def get_context_data(self, **kwargs):
+        # Сначала получаем базовый контекст
+        context = super().get_context_data(**kwargs)
+
+        # Создаем список статистики
+        categories_stats = []
+
+        # Проходим по всем категориям из контекста
+        for category in context['categories']:
+            categories_stats.append({
+                'category': category,
+                'total': category.products.count(),
+                'active': category.products.filter(is_active=True).count(),
+                'published': category.products.filter(is_published=True).count(),
+                'active_published': category.products.filter(is_active=True, is_published=True).count(),
+            })
+
+        # Добавляем статистику в контекст
+        context['categories_stats'] = categories_stats
+
+        return context
 
 class CategoryDetailView(DetailView):
     """Детали категории - доступны всем"""
@@ -173,7 +241,7 @@ class CategoryDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Добавляем товары этой категории
-        context["products"] = self.object.product_set.all()
+        context["products"] = self.object.products.all()
         return context
 
 

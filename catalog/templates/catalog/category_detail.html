@@ -17,9 +17,6 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h2>Информация о категории</h2>
                         <div>
-                            <a href="{% url 'catalog:category_update' category.pk %}" class="btn btn-warning me-2">
-                                Редактировать
-                            </a>
                             <a href="{% url 'catalog:category_delete' category.pk %}" class="btn btn-danger">
                                 Удалить
                             </a>
@@ -43,7 +40,15 @@
     
     <div class="row">
         <div class="col-12">
-            <h3>Товары в этой категории</h3>
+
+            <li class="nav-item">
+                <h3><p><abbr title="Товары в этой категории">
+                            <a href="{% url 'catalog:category_products' category.id %}" class="nav-link active" aria-current="page">
+                                Товары в этой категории
+                            </a></abbr>
+                    </p></h3>
+            </li>
+
             
             {% if products %}
             <div class="row">

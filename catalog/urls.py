@@ -11,9 +11,10 @@ urlpatterns = [
     path("product/<int:pk>/", views.ProductDetailView.as_view(), name="product_detail"),  # Детали товара
     path("product/create/", views.ProductCreate.as_view(), name="product_create"),  # Создание товара
     path("product/<int:pk>/delete/", views.ProductDeleteView.as_view(), name="product_delete"),
+    path("product/update/int:pk/update",views.ProductUpdateView.as_view(),name="product_form"),
     path("category/create/",views.CategoryCreateView.as_view(),name="category_create"), # Создание категорий
     path("category/list/",views.CategoryListView.as_view(),name="category_list"), # Список категорий
     path("category/<int:pk>/",views.CategoryDetailView.as_view(),name="category_detail"),
     path("category/<int:pk>/delete/",views.CategoryDeleteView.as_view(),name="category_delete"),
-    # path("category/update/int:pk/update",views/ProductUpdateView.as_view(),name="product_form"),
+    path('category/<int:category_id>/products/', views.CategoryProductsView.as_view(), name='category_products'),
 ]

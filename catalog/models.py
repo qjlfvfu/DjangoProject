@@ -6,6 +6,9 @@ class Category(models.Model):
     description = models.TextField(verbose_name="Описание",
                                    help_text="Введите описание категории",
                                    blank=True, null=False )
+    owner= models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL,verbose_name="Создатель категории",
+    null=True,blank=True,related_name="category")
+
 
     def __str__(self):
         return self.name
