@@ -12,9 +12,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
 from django.core.cache import cache
-
-# Импортируем модель пользователя
 from django.contrib.auth import get_user_model
+
+from .service import ProductService
 
 User = get_user_model()
 
@@ -183,25 +183,15 @@ class CategoryProductsView(ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        # Получаем категорию по ID из URL
+        # Получаем категорию и сохраняем её для использования в get_context_data
         self.category = get_object_or_404(Category, id=self.kwargs['category_id'])
-        print(f"Категория: {self.category.name}, ID: {self.category.id}")
-
-        # Получаем все товары этой категории (без фильтрации)
-        queryset = Product.objects.filter(category=self.category)
-        print(f"Найдено товаров: {queryset.count()}")
-
-        # Для отладки выведем все товары
-        for product in queryset:
-            print(f"  - {product.name}, активный: {product.is_active}, опубликован: {product.is_published}")
-
-        return queryset
+        # Используем сервисный метод для получения продуктов именно этой категории
+        return ProductService.get_products_by_category(self.kwargs['category_id'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
         return context
-
 
 class CategoryListView(ListView):
     """Список категорий - доступен всем"""
