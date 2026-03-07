@@ -21,28 +21,30 @@ User = get_user_model()
 
 class HomeView(TemplateView):
     """Главная страница"""
+
     template_name = "catalog/home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        products = cache.get('home_products')
+        products = cache.get("home_products")
         if not products:
             products = Product.objects.filter(is_published=True)[:10]
-            cache.set('home_products', products, 60 * 15)
+            cache.set("home_products", products, 60 * 15)
 
-        context['products'] = Product.objects.all().order_by('-created_at')[:8]
+        context["products"] = Product.objects.all().order_by("-created_at")[:8]
         return context
-
 
 
 class ContactsView(TemplateView):
     """Страница контактов - доступна всем"""
+
     template_name = "catalog/contacts.html"
 
 
 class CatalogView(ListView):
     """Каталог товаров - доступен всем"""
+
     model = Product
     paginate_by = 6
     template_name = "catalog/product_catalog.html"
@@ -50,10 +52,10 @@ class CatalogView(ListView):
     ordering = ["-created_at"]
 
     def get_queryset(self):
-        queryset = cache.get('qwerty')
+        queryset = cache.get("qwerty")
         if not queryset:
             queryset = super().get_queryset()
-            cache.set('qwerty', queryset, 60 * 15)  # Кешируем данные на 15 минут
+            cache.set("qwerty", queryset, 60 * 15)  # Кешируем данные на 15 минут
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -64,33 +66,35 @@ class CatalogView(ListView):
         return context
 
 
-
-
-@method_decorator(cache_page(60 * 30), name='dispatch')
+@method_decorator(cache_page(60 * 30), name="dispatch")
 class ProductDetailView(LoginRequiredMixin, DetailView):
     """Страница с подробной информацией о товаре - только для авторизованных"""
+
     model = Product
     template_name = "catalog/product_detail.html"
     context_object_name = "product"
-    login_url = '/botblock/login/'
-    redirect_field_name = 'next'
+    login_url = "/botblock/login/"
+    redirect_field_name = "next"
 
 
 class ProductCreate(LoginRequiredMixin, CreateView):
     """Создание товара - только для авторизованных"""
+
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
     success_url = reverse_lazy("catalog:product_catalog")
-    login_url = '/botblock/login/'
-    redirect_field_name = 'next'
+    login_url = "/botblock/login/"
+    redirect_field_name = "next"
 
     def form_valid(self, form):
         """Действия при успешной валидации формы"""
         # Привязываем товар к текущему пользователю
-        if hasattr(form.instance, 'owner') and self.request.user.is_authenticated:
+        if hasattr(form.instance, "owner") and self.request.user.is_authenticated:
             form.instance.owner = self.request.user
-            print(f"✅ Товар будет привязан к: {self.request.user.email}")  # для отладки
+            print(
+                f"✅ Товар будет привязан к: {self.request.user.email}"
+            )  # для отладки
 
         response = super().form_valid(form)
         messages.success(self.request, f'Товар "{form.instance.name}" успешно создан!')
@@ -111,11 +115,12 @@ class ProductCreate(LoginRequiredMixin, CreateView):
 
 class ProductUpdateView(LoginRequiredMixin, UpdateView):
     """Редактирование товара - только для владельца или staff"""
+
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
-    login_url = '/botblock/login/'
-    redirect_field_name = 'next'
+    login_url = "/botblock/login/"
+    redirect_field_name = "next"
 
     def get_success_url(self):
         return reverse_lazy("catalog:product_detail", kwargs={"pk": self.object.pk})
@@ -129,24 +134,33 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
         self.object = self.get_object()
 
         # Проверяем права: владелец ИЛИ staff
-        if self.object.owner and self.object.owner != request.user and not request.user.is_staff:
-            messages.error(request, "❌ У вас нет прав для редактирования этого товара!")
-            return redirect('catalog:product_detail', pk=self.object.pk)
+        if (
+            self.object.owner
+            and self.object.owner != request.user
+            and not request.user.is_staff
+        ):
+            messages.error(
+                request, "❌ У вас нет прав для редактирования этого товара!"
+            )
+            return redirect("catalog:product_detail", pk=self.object.pk)
 
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, f'Товар "{form.instance.name}" успешно обновлен!')
+        messages.success(
+            self.request, f'Товар "{form.instance.name}" успешно обновлен!'
+        )
         return response
 
 
 class ProductDeleteView(LoginRequiredMixin, DeleteView):
     """Удаление товара - только для владельца или staff"""
+
     model = Product
     template_name = "catalog/product_delete.html"
-    login_url = '/botblock/login/'
-    redirect_field_name = 'next'
+    login_url = "/botblock/login/"
+    redirect_field_name = "next"
 
     def get_success_url(self):
         return reverse_lazy("catalog:product_catalog")
@@ -160,9 +174,13 @@ class ProductDeleteView(LoginRequiredMixin, DeleteView):
         self.object = self.get_object()
 
         # Проверяем права: владелец ИЛИ staff
-        if self.object.owner and self.object.owner != request.user and not request.user.is_staff:
+        if (
+            self.object.owner
+            and self.object.owner != request.user
+            and not request.user.is_staff
+        ):
             messages.error(request, "❌ У вас нет прав для удаления этого товара!")
-            return redirect('catalog:product_detail', pk=self.object.pk)
+            return redirect("catalog:product_detail", pk=self.object.pk)
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -174,9 +192,10 @@ class ProductDeleteView(LoginRequiredMixin, DeleteView):
 
 
 # ===== КАТЕГОРИИ =====
-@method_decorator(cache_page(60 * 120), name='dispatch')
+@method_decorator(cache_page(60 * 120), name="dispatch")
 class CategoryProductsView(ListView):
     """Список продуктов в указанной категории"""
+
     model = Product
     template_name = "catalog/category_products.html"
     context_object_name = "products"
@@ -184,17 +203,19 @@ class CategoryProductsView(ListView):
 
     def get_queryset(self):
         # Получаем категорию и сохраняем её для использования в get_context_data
-        self.category = get_object_or_404(Category, id=self.kwargs['category_id'])
+        self.category = get_object_or_404(Category, id=self.kwargs["category_id"])
         # Используем сервисный метод для получения продуктов именно этой категории
-        return ProductService.get_products_by_category(self.kwargs['category_id'])
+        return ProductService.get_products_by_category(self.kwargs["category_id"])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['category'] = self.category
+        context["category"] = self.category
         return context
+
 
 class CategoryListView(ListView):
     """Список категорий - доступен всем"""
+
     model = Category
     template_name = "catalog/category_list.html"
     context_object_name = "categories"
@@ -208,22 +229,28 @@ class CategoryListView(ListView):
         categories_stats = []
 
         # Проходим по всем категориям из контекста
-        for category in context['categories']:
-            categories_stats.append({
-                'category': category,
-                'total': category.products.count(),
-                'active': category.products.filter(is_active=True).count(),
-                'published': category.products.filter(is_published=True).count(),
-                'active_published': category.products.filter(is_active=True, is_published=True).count(),
-            })
+        for category in context["categories"]:
+            categories_stats.append(
+                {
+                    "category": category,
+                    "total": category.products.count(),
+                    "active": category.products.filter(is_active=True).count(),
+                    "published": category.products.filter(is_published=True).count(),
+                    "active_published": category.products.filter(
+                        is_active=True, is_published=True
+                    ).count(),
+                }
+            )
 
         # Добавляем статистику в контекст
-        context['categories_stats'] = categories_stats
+        context["categories_stats"] = categories_stats
 
         return context
 
+
 class CategoryDetailView(DetailView):
     """Детали категории - доступны всем"""
+
     model = Category
     template_name = "catalog/category_detail.html"
     context_object_name = "category"
@@ -237,42 +264,48 @@ class CategoryDetailView(DetailView):
 
 class CategoryCreateView(LoginRequiredMixin, CreateView):
     """Создание категории - только для авторизованного пользователя"""
+
     model = Category
     form_class = CategoryForm
     template_name = "catalog/category_form.html"
     success_url = reverse_lazy("catalog:category_list")
-    login_url = '/botblock/login/'
-    redirect_field_name = 'next'
+    login_url = "/botblock/login/"
+    redirect_field_name = "next"
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, f'Категория "{form.instance.name}" успешно создана!')
+        messages.success(
+            self.request, f'Категория "{form.instance.name}" успешно создана!'
+        )
         return response
 
 
 class CategoryUpdateView(LoginRequiredMixin, UpdateView):
     """Обновление категории - только для авторизованного пользователя"""
+
     model = Category
     form_class = CategoryForm
     template_name = "catalog/category_form.html"
     success_url = reverse_lazy("catalog:category_list")
-    login_url = '/botblock/login/'
-    redirect_field_name = 'next'
+    login_url = "/botblock/login/"
+    redirect_field_name = "next"
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, f'Категория "{form.instance.name}" успешно обновлена!')
+        messages.success(
+            self.request, f'Категория "{form.instance.name}" успешно обновлена!'
+        )
         return response
 
 
 class CategoryDeleteView(LoginRequiredMixin, DeleteView):
     """Удаление категории - только для авторизованного пользователя"""
+
     model = Category
     template_name = "catalog/category_delete.html"
     success_url = reverse_lazy("catalog:category_list")
-    login_url = '/botblock/login/'
-    redirect_field_name = 'next'
-
+    login_url = "/botblock/login/"
+    redirect_field_name = "next"
 
     def delete(self, request, *args, **kwargs):
         category = self.get_object()

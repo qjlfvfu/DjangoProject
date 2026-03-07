@@ -24,7 +24,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("catalog.urls")),
     path("blog/", include("blog.urls")),
-    path("botblock/",include("botblock.urls")),
+    path("botblock/", include("botblock.urls")),
+    path("lesson/",include("lesson.urls")),
 ]
 
 if settings.DEBUG:

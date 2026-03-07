@@ -7,6 +7,23 @@
             <!-- Основное меню -->
             <a class="p-2 btn btn-primary {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
                href="{% url 'catalog:home' %}">Главная</a>
+
+            <!-- Новый раздел "Обучение" с выпадающим меню -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+                    Обучение
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'lesson:lesson-list' %}">Все уроки</a></li>
+                    <li><a class="dropdown-item" href="{% url 'lesson:lesson-create' %}">+ Создать урок</a></li>
+                                        {% if user.is_authenticated %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'course_create' %}">+ Создать курс</a></li>
+                    <li><a class="dropdown-item" href="{% url 'lesson_create' %}">+ Создать урок</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
             <!-- Кнопки для авторизованных пользователей -->
             {% if user.is_authenticated %}
                 {% if user.is_staff %}

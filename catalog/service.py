@@ -22,33 +22,35 @@ class ProductService:
         Возвращает список товаров для каталога с использованием кеширования
         """
         # Проверяем, включено ли кеширование
-        cache_backend = settings.CACHES.get('default', {}).get('BACKEND', '')
+        cache_backend = settings.CACHES.get("default", {}).get("BACKEND", "")
 
-        if 'dummy' not in cache_backend.lower():
+        if "dummy" not in cache_backend.lower():
             # Кеширование включено (не DummyCache)
-            cached_data = cache.get('catalog_products')
+            cached_data = cache.get("catalog_products")
 
             if cached_data is None:
                 # Данных нет в кеше - получаем из БД и сохраняем
-                cached_data = Product.objects.filter(is_published=True).order_by('-created_at')
-                cache.set('catalog_products', cached_data, 60 * 15)  # 15 минут
+                cached_data = Product.objects.filter(is_published=True).order_by(
+                    "-created_at"
+                )
+                cache.set("catalog_products", cached_data, 60 * 15)  # 15 минут
 
             return cached_data
         else:
             # Кеширование выключено - просто возвращаем из БД
-            return Product.objects.filter(is_published=True).order_by('-created_at')
+            return Product.objects.filter(is_published=True).order_by("-created_at")
 
     @staticmethod
     def get_cached_products_by_category(category_id):
         """
         Возвращает продукты категории с кешированием
         """
-        cache_key = f'category_products_{category_id}'
+        cache_key = f"category_products_{category_id}"
 
         # Проверяем, включено ли кеширование
-        cache_backend = settings.CACHES.get('default', {}).get('BACKEND', '')
+        cache_backend = settings.CACHES.get("default", {}).get("BACKEND", "")
 
-        if 'dummy' not in cache_backend.lower():
+        if "dummy" not in cache_backend.lower():
             # Кеширование включено
             cached_data = cache.get(cache_key)
 
@@ -67,7 +69,7 @@ class ProductService:
         """
         Очищает кеш для конкретной категории
         """
-        cache_key = f'category_products_{category_id}'
+        cache_key = f"category_products_{category_id}"
         cache.delete(cache_key)
 
     @staticmethod
@@ -75,4 +77,4 @@ class ProductService:
         """
         Очищает кеш каталога
         """
-        cache.delete('catalog_products')
+        cache.delete("catalog_products")

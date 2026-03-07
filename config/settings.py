@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "catalog",
     "blog",
     "botblock",
+    "lesson",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -54,14 +56,14 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-AUTH_USER_MODEL = 'botblock.CustomUser'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.mail.ru'
+AUTH_USER_MODEL = "botblock.CustomUser"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.mail.ru"
 EMAIL_PORT = 465
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD =os.getenv ("DATABASES_PASSWORD")
+EMAIL_HOST_PASSWORD = os.getenv("DATABASES_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 ROOT_URLCONF = "config.urls"
@@ -83,6 +85,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users. ПОТОМ РАЗБЕРУСЬ ЧТО ЗА ДИЧЬ
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
+    ]
+}
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -97,9 +107,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 #         "PORT": os.getenv("DATABASES_PORT", "5432"),
 #     }
 # }
-SECRET_KEY = 'django-insecure-your-secret-key-here-1234567890'
+SECRET_KEY = "django-insecure-your-secret-key-here-1234567890"
 DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # ИСПОЛЬЗУЙТЕ SQLITE:
 DATABASES = {
@@ -110,11 +120,11 @@ DATABASES = {
 }
 
 CACHES = {
-     'default': {
-          'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-          'LOCATION': 'redis://127.0.0.1:6379/1',
-      }
- }
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -155,8 +165,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-MEDIA_URL = '/media/'  # URL для доступа к медиа файлам
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Папка для хранения файлов
+MEDIA_URL = "/media/"  # URL для доступа к медиа файлам
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Папка для хранения файлов
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
