@@ -15,7 +15,7 @@ from .forms import (
     AvatarUploadForm,
 )
 from .utils import send_welcome_email
-from .models import CustomUser
+from users.models import CustomUser
 from catalog.models import Product
 
 

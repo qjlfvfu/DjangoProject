@@ -7,11 +7,11 @@ class LessonForm(forms.ModelForm):
     """Форма для создания Урока"""
     class Meta:
         model=Lesson
-        fields= ['name','description','preview','video_file']
+        fields= ['name','description','preview','video_link']
         labels={"name":"Название урока",
                 "description": "Описание урока",
                 "preview":"Изображение урока",
-                "video_file":"видео урока"
+                "video_link":"ссылка на видеоурок"
         }
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
@@ -29,7 +29,7 @@ class LessonForm(forms.ModelForm):
                         "rows": 4,
                     }
                 )
-            elif field_name == "video_file":
+            elif field_name == "video_link":
                 field.widget.attrs.update(
                     {"class": "form-control", "accept": "video/*"}  # Только изображения
                 )

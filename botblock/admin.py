@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from users.models import CustomUser
 
 # Register your models here.
 
@@ -13,7 +13,7 @@ class UserAdmin(UserAdmin):
     search_fields = ["email", "first_name", "last_name"]
 
     # Фильтры справа
-    list_filter = ["is_staff", "is_active", "country"]
+    list_filter = ["is_staff", "is_active", "city"]
 
     # Поля, которые можно редактировать прямо в списке
     list_editable = ["is_staff", "is_active"]

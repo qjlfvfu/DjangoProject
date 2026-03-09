@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "botblock",
     "lesson",
     "rest_framework",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -56,7 +57,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-AUTH_USER_MODEL = "botblock.CustomUser"
+AUTH_USER_MODEL = "users.CustomUser"
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.mail.ru"
 EMAIL_PORT = 465

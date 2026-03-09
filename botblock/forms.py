@@ -2,11 +2,10 @@ from django import forms
 from django.contrib.auth.forms import (
     UserCreationForm,
     AuthenticationForm,
-    PasswordChangeForm,
 )
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
-from .models import CustomUser
+from users.models import CustomUser
 
 
 class UserRegisterForm(UserCreationForm):
