@@ -26,6 +26,7 @@ urlpatterns = [
     path("blog/", include("blog.urls")),
     path("botblock/", include("botblock.urls")),
     path("lesson/",include("lesson.urls")),
+    path('users/', include('users.urls')),
 ]
 
 if settings.DEBUG:
