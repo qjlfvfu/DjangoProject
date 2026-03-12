@@ -1,0 +1,222 @@
+[
+  {
+    "model": "catalog.category",
+    "pk": 1,
+    "fields": {
+      "name": "Мясо",
+      "description": "Вкусное и сочное мясо"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 2,
+    "fields": {
+      "name": "Специи",
+      "description": "различные приправы"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 3,
+    "fields": {
+      "name": "Рыба",
+      "description": "рыбная продукция"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 6,
+    "fields": {
+      "name": "Мясо",
+      "description": "Мясные продукты"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 7,
+    "fields": {
+      "name": "Рыба",
+      "description": "Рыбные продукты"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 8,
+    "fields": {
+      "name": "Овощи",
+      "description": "Свежие овощи"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 9,
+    "fields": {
+      "name": "Фрукты",
+      "description": "Свежие фрукты"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 1,
+    "fields": {
+      "name": "Крокодил",
+      "description": "невкусный но питательный крокодил",
+      "picture": "image/Итаква.jpg",
+      "category": 1,
+      "price": 37699,
+      "created_at": "2026-01-07T18:31:26.859Z",
+      "updated_at": "2026-01-07T18:31:52.870Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 2,
+    "fields": {
+      "name": "Бегемот",
+      "description": "тут все ясно",
+      "picture": "image/роспись.gif",
+      "category": 1,
+      "price": 12342345,
+      "created_at": "2026-01-07T18:45:14.622Z",
+      "updated_at": "2026-01-07T18:45:14.622Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 3,
+    "fields": {
+      "name": "Обезьяна",
+      "description": "почти как ребенок(на вкус)",
+      "picture": "image/Итаква_VJVe2IA.jpg",
+      "category": 1,
+      "price": 21344,
+      "created_at": "2026-01-07T18:45:56.831Z",
+      "updated_at": "2026-01-07T18:45:56.831Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 4,
+    "fields": {
+      "name": "Кашалот",
+      "description": "по сути вкусно",
+      "picture": "image/роспись_KNToyIy.gif",
+      "category": 3,
+      "price": 1299,
+      "created_at": "2026-01-07T18:46:20.684Z",
+      "updated_at": "2026-01-07T18:47:15.390Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 5,
+    "fields": {
+      "name": "Говядина",
+      "description": null,
+      "picture": "",
+      "category": 6,
+      "price": 500,
+      "created_at": "2026-01-07T21:15:31.095Z",
+      "updated_at": "2026-01-07T21:15:31.095Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 6,
+    "fields": {
+      "name": "Свинина",
+      "description": null,
+      "picture": "",
+      "category": 6,
+      "price": 450,
+      "created_at": "2026-01-07T21:15:31.095Z",
+      "updated_at": "2026-01-07T21:15:31.095Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 7,
+    "fields": {
+      "name": "Лосось",
+      "description": null,
+      "picture": "",
+      "category": 7,
+      "price": 800,
+      "created_at": "2026-01-07T21:15:31.095Z",
+      "updated_at": "2026-01-07T21:15:31.095Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 8,
+    "fields": {
+      "name": "Форель",
+      "description": null,
+      "picture": "",
+      "category": 7,
+      "price": 600,
+      "created_at": "2026-01-07T21:15:31.095Z",
+      "updated_at": "2026-01-07T21:15:31.095Z"
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "course": 1,
+      "lesson": null,
+      "amount": "5000.00",
+      "payment_method": "card",
+      "payment_date": "2025-02-15T14:30:00Z"
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 2,
+    "fields": {
+      "user": 1,
+      "course": null,
+      "lesson": 1,
+      "amount": "1500.00",
+      "payment_method": "cash",
+      "payment_date": "2025-02-18T10:15:00Z"
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 3,
+    "fields": {
+      "user": 2,
+      "course": 1,
+      "lesson": null,
+      "amount": "5000.00",
+      "payment_method": "transfer",
+      "payment_date": "2025-02-20T09:45:00Z"
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 4,
+    "fields": {
+      "user": 2,
+      "course": null,
+      "lesson": 2,
+      "amount": "2000.00",
+      "payment_method": "card",
+      "payment_date": "2025-02-22T16:20:00Z"
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 5,
+    "fields": {
+      "user": 3,
+      "course": 2,
+      "lesson": null,
+      "amount": "7500.00",
+      "payment_method": "transfer",
+      "payment_date": "2025-02-25T11:00:00Z"
+    }
+  }
+]

@@ -18,8 +18,7 @@
                     <li><a class="dropdown-item" href="{% url 'lesson:lesson-create' %}">+ Создать урок</a></li>
                                         {% if user.is_authenticated %}
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{% url 'course_create' %}">+ Создать курс</a></li>
-                    <li><a class="dropdown-item" href="{% url 'lesson_create' %}">+ Создать урок</a></li>
+                    <li><a class="dropdown-item" href="{% url 'lesson:course-list' %}">Все курсы</a></li>
                     {% endif %}
                 </ul>
             </div>

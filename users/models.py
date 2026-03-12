@@ -2,6 +2,8 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from lesson.models import Course, Lesson
+
 
 # Create your models here.
 class CustomUserManager(BaseUserManager):
@@ -53,3 +55,64 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class Payment(models.Model):
+    class PaymentMethod(models.TextChoices):
+        CASH = 'cash', 'Наличные'
+        TRANSFER = 'transfer', 'Перевод на счет'
+        CARD = 'card', 'Банковская карта'
+
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name="payments",
+        verbose_name="плательщик"
+    )
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='payments',
+        verbose_name='оплаченный курс'
+    )
+
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='payments',
+        verbose_name='оплаченный урок'
+    )
+
+    amount = models.DecimalField(max_digits=10,decimal_places=2,verbose_name='сумма оплаты')
+
+    payment_method = models.CharField(max_length=20,choices=PaymentMethod.choices,
+                                      default=PaymentMethod.CASH,verbose_name='способ оплаты')
+
+    payment_date = models.DateTimeField(auto_now_add=True,verbose_name="дата оплаты")
+
+    class Meta:
+        verbose_name = 'платеж'
+        verbose_name_plural = 'платежи'
+        ordering = ['-payment_date']  # сначала новые
+
+    def __str__(self):
+        return f'{self.user} - {self.amount} руб. ({self.payment_date.strftime("%d.%m.%Y")})'
+
+    def get_paid_object(self):
+        """Возвращает объект, за который произведена оплата (курс или урок)"""
+        if self.course:
+            return self.course
+        elif self.lesson:
+            return self.lesson
+        return None
+
+    def get_paid_object_name(self):
+        """Возвращает название оплаченного объекта"""
+        obj = self.get_paid_object()
+        return str(obj) if obj else 'Не указано'
+
