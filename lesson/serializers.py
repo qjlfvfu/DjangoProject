@@ -2,25 +2,34 @@ from rest_framework import serializers
 from .models import Course, Lesson
 
 
-class LessonSerializer(serializers.ModelSerializer):
+class LessonDetailSerializer(serializers.ModelSerializer):
+    """
+    ПОЛНЫЙ сериализатор для урока
+    (используется для отдельного вывода урока)
+    """
     class Meta:
         model = Lesson
-        fields = '__all__'
+        fields = '__all__'  # все поля
+
+
+class LessonListSerializer(serializers.ModelSerializer):
+    """
+    ОГРАНИЧЕННЫЙ сериализатор для урока
+    (используется ВНУТРИ сериализатора курса)
+    """
+    class Meta:
+        model = Lesson
+        fields = ['id', 'title']
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    lessons = serializers.SerializerMethodField()
-    lessons_count = serializers.SerializerMethodField()
+    """
+    Сериализатор курса, который использует
+    ОГРАНИЧЕННЫЙ сериализатор для вывода уроков
+    """
+    lessons = LessonListSerializer(many=True, read_only=True)
+    lessons_count = serializers.IntegerField(source='lessons.count', read_only=True)
 
     class Meta:
         model = Course
         fields = ['id', 'name', 'description', 'owner', 'created_at', 'lessons_count', 'lessons']
-
-    def get_lessons_count(self, instance):
-        """Возвращает количество уроков в курсе"""
-        return instance.lessons.count()
-
-    def get_lesson(self,instance):
-        """Возвращает все уроки в курсе"""
-        lessons=instance.lessons.all()
-        return LessonSerializer(lessons,many=True).data
