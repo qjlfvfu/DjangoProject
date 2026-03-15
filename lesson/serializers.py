@@ -9,13 +9,18 @@ class LessonSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    lessons = LessonSerializer(many=True, read_only=True)
+    lessons = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
-        fields = '__all__'
+        fields = ['id', 'name', 'description', 'owner', 'created_at', 'lessons_count', 'lessons']
 
     def get_lessons_count(self, instance):
         """Возвращает количество уроков в курсе"""
         return instance.lessons.count()
+
+    def get_lesson(self,instance):
+        """Возвращает все уроки в курсе"""
+        lessons=instance.lessons.all()
+        return LessonSerializer(lessons,many=True).data
