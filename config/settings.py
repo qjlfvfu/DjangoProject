@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os.path
+from datetime import timedelta
 from pathlib import Path
 
 # from dotenv import load_dotenv
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     "botblock",
     "lesson",
     "rest_framework",
+    'rest_framework_simplejwt',
     "users",
 ]
 
@@ -87,16 +89,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users. ПОТОМ РАЗБЕРУСЬ ЧТО ЗА ДИЧЬ
+REST_FRAMEWORK ={
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
-    ]
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly"]
 }
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

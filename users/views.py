@@ -4,7 +4,14 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Payment
-from .serializers import PaymentSerializer
+from .serializers import MyTokenObtainPairSerializer, PaymentSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
 
 
 class PaymentListAPIView(generics.ListAPIView):
