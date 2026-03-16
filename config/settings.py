@@ -13,23 +13,18 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os.path
 from datetime import timedelta
 from pathlib import Path
-
-# from dotenv import load_dotenv
-#
-# load_dotenv()
+import os
+from dotenv import load_dotenv
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# SECRET_KEY = os.getenv("SECRET_KEY")
-
-# DEBUG = True if os.getenv("DEBUG") == "True" else False
+load_dotenv(BASE_DIR / '.env')
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = os.getenv('DEBUG') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 hosts_str = os.getenv("ALLOWED_HOSTS", "localhost")
-
-# ALLOWED_HOSTS = [host.strip() for host in hosts_str.split(",") if host.strip()]
-
 
 # Application definition
 
@@ -104,24 +99,11 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql_psycopg2",
-#         "NAME": "django_db",
-#         "USER": os.getenv("DATABASES_USER","postgres"),
-#         "PASSWORD": os.getenv("DATABASES_PASSWORD"),
-#         "HOST": os.getenv("DATABASES_HOST", "localhost"),
-#         "PORT": os.getenv("DATABASES_PORT", "5432"),
-#     }
-# }
-SECRET_KEY = "django-insecure-your-secret-key-here-1234567890"
-DEBUG = True
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
-# ИСПОЛЬЗУЙТЕ SQLITE:
+
+
+# Используем SQLite для разработки
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
