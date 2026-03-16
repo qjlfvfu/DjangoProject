@@ -1,26 +1,113 @@
-# users/views.py
-from rest_framework import generics, filters
+from rest_framework import generics, filters, status
 from rest_framework.filters import OrderingFilter
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.auth import get_user_model
 from .models import Payment
-from .serializers import MyTokenObtainPairSerializer, PaymentSerializer
+from .serializers import (
+    MyTokenObtainPairSerializer,
+    PaymentSerializer,
+    UserSerializer,
+    UserCreateSerializer,
+    UserUpdateSerializer
+)
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+User = get_user_model()
 
 
+# ========== JWT Токены ==========
 class MyTokenObtainPairView(TokenObtainPairView):
+    """Получение JWT токена"""
     serializer_class = MyTokenObtainPairSerializer
 
 
+# ========== CRUD для пользователей ==========
+class UserListAPIView(generics.ListAPIView):
+    """Список всех пользователей (только для админов)"""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        # Админы видят всех, обычные пользователи - только себя
+        if self.request.user.is_staff:
+            return User.objects.all()
+        return User.objects.filter(id=self.request.user.id)
+
+
+class UserRetrieveAPIView(generics.RetrieveAPIView):
+    """Детальная информация о пользователе"""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        # Если передан 'me', возвращаем текущего пользователя
+        if self.kwargs.get('pk') == 'me':
+            return self.request.user
+        return super().get_object()
+
+
+class UserCreateAPIView(generics.CreateAPIView):
+    """Регистрация нового пользователя"""
+    queryset = User.objects.all()
+    serializer_class = UserCreateSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # Генерируем токены для нового пользователя
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            'user': UserSerializer(user).data,
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=status.HTTP_201_CREATED)
+
+
+class UserUpdateAPIView(generics.UpdateAPIView):
+    """Обновление информации о пользователе"""
+    queryset = User.objects.all()
+    serializer_class = UserUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Пользователь может редактировать только свой профиль
+        return User.objects.filter(id=self.request.user.id)
+
+
+class UserDestroyAPIView(generics.DestroyAPIView):
+    """Удаление пользователя"""
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Пользователь может удалить только свой профиль
+        return User.objects.filter(id=self.request.user.id)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"message": "Пользователь успешно удален"},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+# ========== Платежи ==========
 class PaymentListAPIView(generics.ListAPIView):
     """API для списка платежей с фильтрацией прямо во вьюхе"""
-
     queryset = Payment.objects.select_related('user', 'course', 'lesson').all()
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    filter_backends = [DjangoFilterBackend,OrderingFilter,]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = {
         'payment_method': ['exact'],
         'course': ['exact'],
@@ -34,12 +121,7 @@ class PaymentListAPIView(generics.ListAPIView):
     ordering = ['-payment_date']
 
     def get_queryset(self):
-        """
-        Переопределяем get_queryset для кастомной фильтрации
-        """
         queryset = super().get_queryset()
-
-        # Получаем параметры из запроса
         params = self.request.query_params
 
         # Фильтр по дате (диапазон)
@@ -51,7 +133,7 @@ class PaymentListAPIView(generics.ListAPIView):
         if date_to:
             queryset = queryset.filter(payment_date__lte=date_to)
 
-        # Фильтр по курсу (можно по ID или части названия)
+        # Фильтр по курсу
         course_id = params.get('course_id')
         if course_id:
             queryset = queryset.filter(course_id=course_id)
@@ -102,7 +184,6 @@ class PaymentListAPIView(generics.ListAPIView):
         return queryset
 
     def list(self, request, *args, **kwargs):
-        """Добавляем информацию о примененных фильтрах в ответ"""
         response = super().list(request, *args, **kwargs)
 
         response.data = {
