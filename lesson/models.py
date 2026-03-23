@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 
+from lesson.validators import validate_youtube_url
+
 
 class Course(models.Model):
     name = models.CharField(max_length=255, verbose_name="Название")
@@ -19,19 +21,24 @@ class Course(models.Model):
 
 
 class Lesson(models.Model):
-    course = models.ForeignKey(
-        Course,
-        on_delete=models.CASCADE,
-        related_name="lessons",
-        verbose_name="Курс"
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
+    name = models.CharField(max_length=200, verbose_name="Название урока")
+    description = models.TextField(verbose_name="Описание", blank=True)
+    video_url = models.URLField(
+        verbose_name="Ссылка на видео",
+        blank=True,
+        null=True,
+        validators=[validate_youtube_url]  # Добавляем валидатор
     )
-    name = models.CharField(max_length=255, verbose_name="Название")
-    description = models.TextField(blank=True, null=True, verbose_name="Описание")
+    owner = models.ForeignKey(
+        'users.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='lessons'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     preview = models.ImageField(upload_to="lessons/", blank=True, null=True, verbose_name="Превью")
     video_link = models.URLField(blank=True, null=True, verbose_name="Ссылка на видео")
-    owner =models.ForeignKey(
-        settings.AUTH_USER_MODEL,on_delete=models.CASCADE,
-        verbose_name="Создатель урока",null=True,blank=True,related_name="lessons")
 
 
     class Meta:
@@ -40,3 +47,28 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Subscription(models.Model):
+    """Модель подписки на обновления курса"""
+    user = models.ForeignKey(
+        'users.CustomUser',
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь",
+        related_name="subscriptions"
+    )
+    course = models.ForeignKey(
+        'Course',
+        on_delete=models.CASCADE,
+        verbose_name="Курс",
+        related_name="subscribers"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата подписки")
+
+    class Meta:
+        unique_together = ['user', 'course']
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+
+    def __str__(self):
+        return f"{self.user.email} -> {self.course.title}"

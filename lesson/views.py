@@ -4,9 +4,11 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
+from .paginators import CoursePagination, LessonPagination
 
 from .serializers import CourseSerializer, LessonListSerializer, LessonDetailSerializer
-from .models import Course, Lesson
+from .models import Course, Lesson, Subscription
 from users.permissions import (
     IsModerator, IsOwner, IsOwnerOrModerator,
     CanCreateCourseLesson, CanDeleteCourseLesson
@@ -17,6 +19,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet для курсов с разграничением прав"""
     queryset = Course.objects.all().prefetch_related('lessons')
     serializer_class = CourseSerializer
+    pagination_class = CoursePagination
 
     def get_permissions(self):
         """
@@ -57,6 +60,7 @@ class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonListSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
+    pagination_class = LessonPagination
     filterset_fields = ['course']
     ordering_fields = ['name', 'created_at']
     ordering = ['name']
@@ -126,3 +130,41 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
             {"message": "Урок успешно удален"},
             status=status.HTTP_204_NO_CONTENT
         )
+
+
+class SubscriptionView(APIView):
+    """API для управления подписками на курс"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        course_id = request.data.get('course_id')
+
+        if not course_id:
+            return Response(
+                {"error": "course_id обязателен"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        course = get_object_or_404(Course, id=course_id)
+
+        # Проверяем, существует ли подписка
+        subscription = Subscription.objects.filter(user=user, course=course)
+
+        if subscription.exists():
+            # Если подписка есть - удаляем
+            subscription.delete()
+            message = "Подписка удалена"
+            subscribed = False
+        else:
+            # Если подписки нет - создаем
+            Subscription.objects.create(user=user, course=course)
+            message = "Подписка добавлена"
+            subscribed = True
+
+        return Response({
+            "message": message,
+            "subscribed": subscribed,
+            "course_id": course.id,
+            "course_name": course.name
+        })
