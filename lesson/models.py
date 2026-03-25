@@ -5,6 +5,7 @@ from lesson.validators import validate_youtube_url
 
 
 class Course(models.Model):
+    objects = None
     name = models.CharField(max_length=255, verbose_name="Название")
     preview = models.ImageField(upload_to="courses/", blank=True, null=True, verbose_name="Превью")
     description = models.TextField(blank=True, null=True, verbose_name="Описание")
