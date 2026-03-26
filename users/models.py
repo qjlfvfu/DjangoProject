@@ -43,7 +43,9 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
-    country = models.CharField(max_length=100, blank=True, null=True, verbose_name="Страна")
+    country = models.CharField(
+        max_length=100, blank=True, null=True, verbose_name="Страна"
+    )
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -59,15 +61,15 @@ class CustomUser(AbstractUser):
 
 class Payment(models.Model):
     class PaymentMethod(models.TextChoices):
-        CASH = 'cash', 'Наличные'
-        TRANSFER = 'transfer', 'Перевод на счет'
-        CARD = 'card', 'Банковская карта'
+        CASH = "cash", "Наличные"
+        TRANSFER = "transfer", "Перевод на счет"
+        CARD = "card", "Банковская карта"
 
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
         related_name="payments",
-        verbose_name="плательщик"
+        verbose_name="плательщик",
     )
 
     course = models.ForeignKey(
@@ -75,8 +77,8 @@ class Payment(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='payments',
-        verbose_name='оплаченный курс'
+        related_name="payments",
+        verbose_name="оплаченный курс",
     )
 
     lesson = models.ForeignKey(
@@ -84,21 +86,27 @@ class Payment(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='payments',
-        verbose_name='оплаченный урок'
+        related_name="payments",
+        verbose_name="оплаченный урок",
     )
 
-    amount = models.DecimalField(max_digits=10,decimal_places=2,verbose_name='сумма оплаты')
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="сумма оплаты"
+    )
 
-    payment_method = models.CharField(max_length=20,choices=PaymentMethod.choices,
-                                      default=PaymentMethod.CASH,verbose_name='способ оплаты')
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PaymentMethod.choices,
+        default=PaymentMethod.CASH,
+        verbose_name="способ оплаты",
+    )
 
-    payment_date = models.DateTimeField(auto_now_add=True,verbose_name="дата оплаты")
+    payment_date = models.DateTimeField(auto_now_add=True, verbose_name="дата оплаты")
 
     class Meta:
-        verbose_name = 'платеж'
-        verbose_name_plural = 'платежи'
-        ordering = ['-payment_date']  # сначала новые
+        verbose_name = "платеж"
+        verbose_name_plural = "платежи"
+        ordering = ["-payment_date"]  # сначала новые
 
     def __str__(self):
         return f'{self.user} - {self.amount} руб. ({self.payment_date.strftime("%d.%m.%Y")})'
@@ -114,5 +122,4 @@ class Payment(models.Model):
     def get_paid_object_name(self):
         """Возвращает название оплаченного объекта"""
         obj = self.get_paid_object()
-        return str(obj) if obj else 'Не указано'
-
+        return str(obj) if obj else "Не указано"

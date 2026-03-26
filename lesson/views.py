@@ -10,14 +10,18 @@ from .paginators import CoursePagination, LessonPagination
 from .serializers import CourseSerializer, LessonListSerializer, LessonDetailSerializer
 from .models import Course, Lesson, Subscription
 from users.permissions import (
-    IsModerator, IsOwner, IsOwnerOrModerator,
-    CanCreateCourseLesson, CanDeleteCourseLesson
+    IsModerator,
+    IsOwner,
+    IsOwnerOrModerator,
+    CanCreateCourseLesson,
+    CanDeleteCourseLesson,
 )
 
 
 class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet для курсов с разграничением прав"""
-    queryset = Course.objects.all().prefetch_related('lessons')
+
+    queryset = Course.objects.all().prefetch_related("lessons")
     serializer_class = CourseSerializer
     pagination_class = CoursePagination
 
@@ -25,13 +29,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         """
         Динамическое определение прав в зависимости от действия
         """
-        if self.action in ['list', 'retrieve']:
+        if self.action in ["list", "retrieve"]:
             permission_classes = [IsAuthenticated]
-        elif self.action == 'create':
+        elif self.action == "create":
             permission_classes = [IsAuthenticated, CanCreateCourseLesson]
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ["update", "partial_update"]:
             permission_classes = [IsAuthenticated, IsOwnerOrModerator]
-        elif self.action == 'destroy':
+        elif self.action == "destroy":
             permission_classes = [IsAuthenticated, CanDeleteCourseLesson]
         else:
             permission_classes = [IsAuthenticated]
@@ -50,43 +54,46 @@ class CourseViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return Course.objects.none()
 
-        if user.groups.filter(name='moderators').exists():
-            return Course.objects.all().prefetch_related('lessons')
-        return Course.objects.filter(owner=user).prefetch_related('lessons')
+        if user.groups.filter(name="moderators").exists():
+            return Course.objects.all().prefetch_related("lessons")
+        return Course.objects.filter(owner=user).prefetch_related("lessons")
 
 
 class LessonListAPIView(generics.ListAPIView):
     """Список уроков"""
+
     serializer_class = LessonListSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     pagination_class = LessonPagination
-    filterset_fields = ['course']
-    ordering_fields = ['name', 'created_at']
-    ordering = ['name']
+    filterset_fields = ["course"]
+    ordering_fields = ["name", "created_at"]
+    ordering = ["name"]
 
     def get_queryset(self):
         user = self.request.user
-        if user.groups.filter(name='moderators').exists():
+        if user.groups.filter(name="moderators").exists():
             return Lesson.objects.all()
         return Lesson.objects.filter(owner=user)
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
     """Детальный просмотр урока"""
+
     queryset = Lesson.objects.all()
     serializer_class = LessonDetailSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.groups.filter(name='moderators').exists():
+        if user.groups.filter(name="moderators").exists():
             return Lesson.objects.all()
         return Lesson.objects.filter(owner=user)
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
     """Создание урока"""
+
     queryset = Lesson.objects.all()
     serializer_class = LessonDetailSerializer
     permission_classes = [IsAuthenticated, CanCreateCourseLesson]
@@ -98,19 +105,21 @@ class LessonCreateAPIView(generics.CreateAPIView):
 
 class LessonUpdateAPIView(generics.UpdateAPIView):
     """Обновление урока"""
+
     queryset = Lesson.objects.all()
     serializer_class = LessonDetailSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrModerator]
 
     def get_queryset(self):
         user = self.request.user
-        if user.groups.filter(name='moderators').exists():
+        if user.groups.filter(name="moderators").exists():
             return Lesson.objects.all()
         return Lesson.objects.filter(owner=user)
 
 
 class LessonDestroyAPIView(generics.DestroyAPIView):
     """Удаление урока"""
+
     queryset = Lesson.objects.all()
     serializer_class = LessonDetailSerializer
     permission_classes = [IsAuthenticated, CanDeleteCourseLesson]
@@ -127,23 +136,22 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
         self.perform_destroy(instance)
         # ИИшка говорит так лучше
         return Response(
-            {"message": "Урок успешно удален"},
-            status=status.HTTP_204_NO_CONTENT
+            {"message": "Урок успешно удален"}, status=status.HTTP_204_NO_CONTENT
         )
 
 
 class SubscriptionView(APIView):
     """API для управления подписками на курс"""
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.user
-        course_id = request.data.get('course_id')
+        course_id = request.data.get("course_id")
 
         if not course_id:
             return Response(
-                {"error": "course_id обязателен"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "course_id обязателен"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         course = get_object_or_404(Course, id=course_id)
@@ -162,9 +170,11 @@ class SubscriptionView(APIView):
             message = "Подписка добавлена"
             subscribed = True
 
-        return Response({
-            "message": message,
-            "subscribed": subscribed,
-            "course_id": course.id,
-            "course_name": course.name
-        })
+        return Response(
+            {
+                "message": message,
+                "subscribed": subscribed,
+                "course_id": course.id,
+                "course_name": course.name,
+            }
+        )

@@ -1,17 +1,20 @@
 from black.cache import field
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Lesson,Course
+from .models import Lesson, Course
+
 
 class LessonForm(forms.ModelForm):
     """Форма для создания Урока"""
+
     class Meta:
-        model=Lesson
-        fields= ['name','description','preview','video_link']
-        labels={"name":"Название урока",
-                "description": "Описание урока",
-                "preview":"Изображение урока",
-                "video_link":"ссылка на видеоурок"
+        model = Lesson
+        fields = ["name", "description", "preview", "video_link"]
+        labels = {
+            "name": "Название урока",
+            "description": "Описание урока",
+            "preview": "Изображение урока",
+            "video_link": "ссылка на видеоурок",
         }
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
@@ -53,12 +56,14 @@ class LessonForm(forms.ModelForm):
 
 class CourseForm(forms.ModelForm):
     """Форма для создания Курса"""
+
     class Meta:
-        model= Course
-        fields='__all__'
-        labels={"name":"Название Курса",
-                "description":"Описание Курса",
-                "preview":"Картинка Курса"
+        model = Course
+        fields = "__all__"
+        labels = {
+            "name": "Название Курса",
+            "description": "Описание Курса",
+            "preview": "Картинка Курса",
         }
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
