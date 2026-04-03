@@ -5,6 +5,7 @@ from lesson.validators import validate_youtube_url
 
 
 class Course(models.Model):
+    """Модель курсов"""
     objects = None
     name = models.CharField(max_length=255, verbose_name="Название")
     preview = models.ImageField(
@@ -19,6 +20,24 @@ class Course(models.Model):
         blank=True,
         related_name="courses",
     )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Цена (в рублях)"
+    )
+    stripe_product_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Stripe Product ID"
+    )
+    stripe_price_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Stripe Price ID"
+    )
 
     class Meta:
         verbose_name = "Курс"
@@ -29,6 +48,7 @@ class Course(models.Model):
 
 
 class Lesson(models.Model):
+    """Модель уроков"""
     objects = None
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="lessons")
     name = models.CharField(max_length=200, verbose_name="Название урока")
@@ -42,6 +62,7 @@ class Lesson(models.Model):
     owner = models.ForeignKey(
         "users.CustomUser", on_delete=models.CASCADE, related_name="lessons"
     )
+    created_at = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     preview = models.ImageField(
@@ -60,6 +81,7 @@ class Lesson(models.Model):
 class Subscription(models.Model):
     """Модель подписки на обновления курса"""
 
+    objects = None
     user = models.ForeignKey(
         "users.CustomUser",
         on_delete=models.CASCADE,
@@ -80,4 +102,4 @@ class Subscription(models.Model):
         verbose_name_plural = "Подписки"
 
     def __str__(self):
-        return f"{self.user.email} -> {self.course.title}"
+        return f"{self.user.email} -> {self.course.name}"

@@ -1,4 +1,5 @@
 from django.urls import path, include
+from rest_framework import views
 from rest_framework.routers import DefaultRouter
 from .views import (
     CourseViewSet,
@@ -7,6 +8,8 @@ from .views import (
     LessonListAPIView,
     LessonRetrieveAPIView,
     LessonUpdateAPIView,
+    CheckoutSessionStatusView,
+    CreateCheckoutSessionView,
 )
 
 router = DefaultRouter()
@@ -25,4 +28,6 @@ urlpatterns = [
     path(
         "lessons/delete/<int:pk>/", LessonDestroyAPIView.as_view(), name="lesson-delete"
     ),
+    path('checkout/<int:course_id>/', CreateCheckoutSessionView.as_view(), name='checkout'),
+    path('checkout-status/<str:session_id>/', CheckoutSessionStatusView.as_view(), name='checkout-status'),
 ]

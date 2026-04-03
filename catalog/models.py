@@ -3,6 +3,7 @@ from django.conf import settings
 
 
 class Category(models.Model):
+    """Модель категорий"""
     name = models.CharField(max_length=40, verbose_name="Категория", unique=True)
     description = models.TextField(
         verbose_name="Описание",
@@ -29,6 +30,7 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    """Модель продуктов"""
     name = models.CharField(
         max_length=100, verbose_name="Наименование товара", unique=True
     )

@@ -60,6 +60,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "name",
             "preview",
             "description",
+            "price",
             "owner",
             "owner_email",
             "lessons_count",
@@ -76,3 +77,5 @@ class CourseSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return Subscription.objects.filter(user=request.user, course=obj).exists()
         return False
+
+

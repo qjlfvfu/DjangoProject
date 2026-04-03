@@ -1,12 +1,13 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, generics, status
 from rest_framework.filters import OrderingFilter
+from .paginators import CoursePagination, LessonPagination
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from .paginators import CoursePagination, LessonPagination
-
+from .services import StripeService
 from .serializers import CourseSerializer, LessonListSerializer, LessonDetailSerializer
 from .models import Course, Lesson, Subscription
 from users.permissions import (
@@ -20,10 +21,30 @@ from users.permissions import (
 
 class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet для курсов с разграничением прав"""
-
-    queryset = Course.objects.all().prefetch_related("lessons")
+    queryset = Course.objects.all().prefetch_related('lessons')
     serializer_class = CourseSerializer
     pagination_class = CoursePagination
+
+    def get_serializer_context(self):
+        """Передаем request в контекст для поля is_subscribed"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    @swagger_auto_schema(
+        operation_description="Получить список всех курсов",
+        responses={200: CourseSerializer(many=True)}
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Создать новый курс",
+        request_body=CourseSerializer
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
 
     def get_permissions(self):
         """
@@ -177,4 +198,70 @@ class SubscriptionView(APIView):
                 "course_id": course.id,
                 "course_name": course.name,
             }
+        )
+
+
+class CreateCheckoutSessionView(APIView):
+    """Создание сессии для оплаты курса"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+
+        if not course.stripe_price_id:
+            product = StripeService.create_product(course)
+            if product:
+                course.stripe_product_id = product.id
+                price = StripeService.create_price(
+                    product_id=product.id,
+                    amount=int(course.price * 100)
+                )
+                if price:
+                    course.stripe_price_id = price.id
+                    course.save()
+
+        if not course.stripe_price_id:
+            return Response(
+                {"error": "Не удалось создать продукт в Stripe"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        success_url = request.data.get('success_url', 'http://localhost:8000/success/')
+        cancel_url = request.data.get('cancel_url', 'http://localhost:8000/cancel/')
+
+        session = StripeService.create_checkout_session(
+            price_id=course.stripe_price_id,
+            success_url=success_url,
+            cancel_url=cancel_url
+        )
+
+        if session:
+            return Response({
+                'session_id': session.id,
+                'url': session.url
+            })
+        else:
+            return Response(
+                {"error": "Не удалось создать сессию оплаты"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class CheckoutSessionStatusView(APIView):
+    """Получение статуса оплаты"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, session_id):
+        session = StripeService.get_checkout_session(session_id)
+        if session:
+            return Response({
+                'session_id': session.id,
+                'status': session.payment_status,
+                'customer_email': session.customer_details.email if session.customer_details else None,
+                'amount_total': session.amount_total / 100 if session.amount_total else 0,
+                'currency': session.currency,
+            })
+        return Response(
+            {"error": "Сессия не найдена"},
+            status=status.HTTP_404_NOT_FOUND
         )

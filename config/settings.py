@@ -16,7 +16,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-
+import stripe
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
@@ -25,6 +25,10 @@ DEBUG = os.getenv("DEBUG") == "True"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 hosts_str = os.getenv("ALLOWED_HOSTS", "localhost")
+
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
+stripe.api_key = STRIPE_SECRET_KEY
 
 # Application definition
 
@@ -36,13 +40,16 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_filters",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    'corsheaders',
+    'drf_yasg',
+    'drf_spectacular',
+    "users",
     "catalog",
     "blog",
     "botblock",
     "lesson",
-    "rest_framework",
-    "rest_framework_simplejwt",
-    "users",
 ]
 
 MIDDLEWARE = [
@@ -53,6 +60,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
@@ -88,6 +96,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly"
@@ -153,6 +162,23 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://localhost:8000',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://read-and-write.example.com", #  Замените на адрес вашего фронтенд-сервера
+    # и добавьте адрес бэкенд-сервера
+]
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Catalog API',
+    'DESCRIPTION': 'API для управления курсами, уроками и подписками',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 MEDIA_URL = "/media/"  # URL для доступа к медиа файлам
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Папка для хранения файлов
@@ -161,3 +187,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Папка для хранени
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+CORS_ALLOW_ALL_ORIGINS = False
