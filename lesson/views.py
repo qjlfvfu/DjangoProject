@@ -9,6 +9,9 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .services import StripeService
 from .serializers import CourseSerializer, LessonListSerializer, LessonDetailSerializer
+from django.utils import timezone
+from datetime import timedelta
+from users.tasks import notify_course_subscribers
 from .models import Course, Lesson, Subscription
 from users.permissions import (
     IsModerator,
@@ -78,6 +81,52 @@ class CourseViewSet(viewsets.ModelViewSet):
         if user.groups.filter(name="moderators").exists():
             return Course.objects.all().prefetch_related("lessons")
         return Course.objects.filter(owner=user).prefetch_related("lessons")
+
+    def update(self, request, *args, **kwargs):
+        """
+        Обновление курса с отправкой уведомлений подписчикам
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        # Сохраняем старые значения для сравнения
+        old_name = instance.name
+        old_description = instance.description
+
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Проверяем, были ли изменения
+        has_changes = (
+                old_name != instance.name or
+                old_description != instance.description
+        )
+
+        if has_changes:
+            # Дополнительное задание: проверка времени с последнего уведомления
+            now = timezone.now()
+            four_hours_ago = now - timedelta(hours=4)
+
+            # Отправляем уведомление, если прошло более 4 часов или уведомление не отправлялось
+            if (instance.last_notification_sent is None or
+                    instance.last_notification_sent < four_hours_ago):
+                # Асинхронная отправка уведомлений подписчикам
+                notify_course_subscribers.delay(
+                    course_id=instance.id,
+                    course_name=instance.name,
+                    updated_fields=['name', 'description'] if has_changes else None
+                )
+
+                # Обновляем время последнего уведомления
+                instance.last_notification_sent = now
+                instance.save(update_fields=['last_notification_sent'])
+
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        """Обновление курса"""
+        serializer.save()
 
 
 class LessonListAPIView(generics.ListAPIView):

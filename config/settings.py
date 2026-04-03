@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django_celery_beat',
     "django_filters",
     "rest_framework",
     "rest_framework_simplejwt",
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     "blog",
     "botblock",
     "lesson",
+    'mailing',
 ]
 
 MIDDLEWARE = [
@@ -74,6 +76,19 @@ EMAIL_HOST_PASSWORD = os.getenv("DATABASES_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 ROOT_URLCONF = "config.urls"
+
+# Настройки для Celery
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_TIMEZONE = "Europe/Moscow"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BEAT_SCHEDULE = {
+    'task-name': {
+        'task': 'users.block_inactive_user.',  # Путь к задаче
+        'schedule': timedelta(days=30),  # Расписание выполнения задачи (например, каждые 30 дней)
+    },
+}
 
 TEMPLATES = [
     {

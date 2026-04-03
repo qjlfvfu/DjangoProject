@@ -52,20 +52,14 @@ class CourseSerializer(serializers.ModelSerializer):
     lessons_count = serializers.IntegerField(source="lessons.count", read_only=True)
     owner_email = serializers.EmailField(source="owner.email", read_only=True)
     is_subscribed = serializers.SerializerMethodField()
+    last_notification_sent = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = Course
         fields = [
-            "id",
-            "name",
-            "preview",
-            "description",
-            "price",
-            "owner",
-            "owner_email",
-            "lessons_count",
-            "lessons",
-            "is_subscribed",
+            "id", "name", "preview", "description",
+            "owner", "owner_email", "lessons_count", "lessons",
+            "is_subscribed", "last_notification_sent"
         ]
         read_only_fields = ["owner"]
 
