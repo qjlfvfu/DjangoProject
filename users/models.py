@@ -42,11 +42,10 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractUser):
     """Модель Пользователя"""
+
     email = models.EmailField(unique=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
-    city = models.CharField(
-        max_length=100, blank=True, null=True, verbose_name="Город"
-    )
+    city = models.CharField(max_length=100, blank=True, null=True, verbose_name="Город")
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -62,6 +61,7 @@ class CustomUser(AbstractUser):
 
 class Payment(models.Model):
     """Модель Платежей"""
+
     class PaymentMethod(models.TextChoices):
         CASH = "cash", "Наличные"
         TRANSFER = "transfer", "Перевод на счет"
@@ -71,8 +71,7 @@ class Payment(models.Model):
         CustomUser,
         on_delete=models.CASCADE,
         related_name="payments",
-        verbose_name="плательщик",
-    )
+        verbose_name="плательщик")
 
     course = models.ForeignKey(
         Course,
@@ -80,30 +79,26 @@ class Payment(models.Model):
         null=True,
         blank=True,
         related_name="payments",
-        verbose_name="оплаченный курс",
-    )
+        verbose_name="оплаченный курс")
 
-    lesson = models.ForeignKey(
-        Lesson,
+    lesson = models.ForeignKey(Lesson,
         on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        null=True,blank=True,
         related_name="payments",
-        verbose_name="оплаченный урок",
-    )
+        verbose_name="оплаченный урок")
 
     amount = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name="сумма оплаты"
-    )
+        max_digits=10, decimal_places=2, verbose_name="сумма оплаты")
 
     payment_method = models.CharField(
         max_length=20,
         choices=PaymentMethod.choices,
         default=PaymentMethod.CASH,
-        verbose_name="способ оплаты",
-    )
+        verbose_name="способ оплаты")
 
     payment_date = models.DateTimeField(auto_now_add=True, verbose_name="дата оплаты")
+    stripe_session_id = models.CharField(max_length=255,blank=True, null=True,verbose_name="ID сессии Stripe")
+    stripe_payment_intent_id = models.CharField(max_length=255,blank=True,null=True,verbose_name="ID платежа Stripe")
 
     class Meta:
         verbose_name = "платеж"

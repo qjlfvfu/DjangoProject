@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView
@@ -8,8 +8,6 @@ from django.views.generic.edit import CreateView, DeleteView
 from .forms import CategoryForm, ProductForm
 from .models import Category, Product
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
 from django.core.cache import cache
 from django.contrib.auth import get_user_model

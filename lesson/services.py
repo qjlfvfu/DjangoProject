@@ -1,6 +1,5 @@
 import stripe
 from django.conf import settings
-from .models import Course
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -15,9 +14,7 @@ class StripeService:
             product = stripe.Product.create(
                 name=course.name,
                 description=course.description[:500] if course.description else "",
-                metadata={
-                    'course_id': course.id
-                }
+                metadata={"course_id": course.id},
             )
             return product
         except stripe.error.StripeError as e:
@@ -25,7 +22,7 @@ class StripeService:
             return None
 
     @staticmethod
-    def create_price(product_id, amount=1000, currency='rub'):
+    def create_price(product_id, amount=1000, currency="rub"):
         """Создание цены для продукта"""
         try:
             price = stripe.Price.create(
@@ -39,21 +36,26 @@ class StripeService:
             return None
 
     @staticmethod
-    def create_checkout_session(price_id, success_url, cancel_url):
+    def create_checkout_session(price_id, success_url, cancel_url, metadata=None):
         """Создание сессии для оплаты"""
         try:
-            checkout_session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                line_items=[
+            session_data = {
+                "payment_method_types": ["card"],
+                "line_items": [
                     {
-                        'price': price_id,
-                        'quantity': 1,
+                        "price": price_id,
+                        "quantity": 1,
                     },
                 ],
-                mode='payment',
-                success_url=success_url,
-                cancel_url=cancel_url,
-            )
+                "mode": "payment",
+                "success_url": success_url,
+                "cancel_url": cancel_url,
+            }
+
+            if metadata:
+                session_data["metadata"] = metadata
+
+            checkout_session = stripe.checkout.Session.create(**session_data)
             return checkout_session
         except stripe.error.StripeError as e:
             print(f"Ошибка создания сессии: {e}")

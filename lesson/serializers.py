@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Course, Lesson, Subscription
-from .validators import validate_youtube_url, YouTubeURLValidator
+from .validators import YouTubeURLValidator
 
 
 class LessonListSerializer(serializers.ModelSerializer):
@@ -57,9 +57,16 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = [
-            "id", "name", "preview", "description",
-            "owner", "owner_email", "lessons_count", "lessons",
-            "is_subscribed", "last_notification_sent"
+            "id",
+            "name",
+            "preview",
+            "description",
+            "owner",
+            "owner_email",
+            "lessons_count",
+            "lessons",
+            "is_subscribed",
+            "last_notification_sent",
         ]
         read_only_fields = ["owner"]
 
@@ -73,3 +80,12 @@ class CourseSerializer(serializers.ModelSerializer):
         return False
 
 
+class StripeSessionSerializer(serializers.Serializer):
+    session_id = serializers.CharField()
+    url = serializers.URLField(required=False)
+    status = serializers.CharField(required=False)
+    customer_email = serializers.EmailField(required=False)
+    amount_total = serializers.DecimalField(
+        max_digits=10, decimal_places=2, required=False
+    )
+    currency = serializers.CharField(required=False)

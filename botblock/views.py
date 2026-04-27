@@ -53,7 +53,7 @@ class RegisterView(CreateView):
                     "Регистрация успешна! На ваш email отправлено приветственное письмо."
                 ),
             )
-        except Exception as e:
+        except Exception :
             messages.warning(
                 self.request,
                 _(

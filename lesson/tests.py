@@ -4,11 +4,11 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-
+from django.conf import settings
+import stripe
 
 from .models import Course, Lesson, Subscription
 from .validators import validate_youtube_url
-
 
 User = get_user_model()
 
@@ -485,3 +485,412 @@ class ValidatorTests(TestCase):
         for url in invalid_urls:
             with self.assertRaises(Exception):
                 validate_youtube_url(url)
+
+
+class StripePaymentTest(TestCase):
+    """Тесты для Stripe платежей"""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="test@test.com",
+            password="testpass123",
+            name="Test User",
+        )
+        self.client.force_authenticate(user=self.user)
+
+        # Создаем тестовый курс
+        self.course = Course.objects.create(
+            name="Test Course",
+            description="Test Description",
+            price=1000,  # 1000 рублей
+            owner=self.user,
+        )
+
+        # Настройка Stripe для тестов
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        # Создаем тестовый продукт и цену в Stripe
+        self.product = stripe.Product.create(
+            name=self.course.name, description=self.course.description
+        )
+
+        self.price = stripe.Price.create(
+            product=self.product.id,
+            unit_amount=int(self.course.price * 100),
+            currency="rub",
+        )
+
+        self.course.stripe_product_id = self.product.id
+        self.course.stripe_price_id = self.price.id
+        self.course.save()
+
+    def create_payment_intent(self, card_number, amount=1000):
+        """Вспомогательный метод для создания PaymentIntent"""
+        try:
+            # Создаем PaymentMethod с тестовой картой
+            payment_method = stripe.PaymentMethod.create(
+                type="card",
+                card={
+                    "number": card_number,
+                    "exp_month": 12,
+                    "exp_year": 2025,
+                    "cvc": "123",
+                },
+            )
+
+            # Создаем PaymentIntent
+            intent = stripe.PaymentIntent.create(
+                amount=amount,
+                currency="rub",
+                payment_method=payment_method.id,
+                confirmation_method="manual",
+                confirm=True,
+                return_url="https://example.com/return",
+            )
+
+            return intent
+        except stripe.error.CardError as e:
+            return {"error": e.error.message}
+
+    def test_visa_card_payment_success(self):
+        """Тест успешной оплаты картой Visa (4242)"""
+        intent = self.create_payment_intent("4242424242424242")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+        self.assertEqual(intent.amount, 1000)
+        self.assertEqual(intent.currency, "rub")
+
+    def test_visa_debit_card_payment(self):
+        """Тест оплаты картой Visa Debit (4000056655665556)"""
+        intent = self.create_payment_intent("4000056655665556")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+    def test_mastercard_payment(self):
+        """Тест оплаты картой Mastercard (5555555555554444)"""
+        intent = self.create_payment_intent("5555555555554444")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+    def test_mastercard_debit_payment(self):
+        """Тест оплаты картой Mastercard Debit (5200828282828210)"""
+        intent = self.create_payment_intent("5200828282828210")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+    def test_mastercard_prepaid_payment(self):
+        """Тест оплаты картой Mastercard Prepaid (5105105105105100)"""
+        intent = self.create_payment_intent("5105105105105100")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+    def test_american_express_payment(self):
+        """Тест оплаты картой American Express (378282246310005)"""
+        intent = self.create_payment_intent("378282246310005")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+    def test_american_express_2_payment(self):
+        """Тест оплаты картой American Express 2 (371449635398431)"""
+        intent = self.create_payment_intent("371449635398431")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+    def test_discover_card_payment(self):
+        """Тест оплаты картой Discover (6011111111111117)"""
+        intent = self.create_payment_intent("6011111111111117")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+    def test_discover_2_payment(self):
+        """Тест оплаты картой Discover 2 (6011000990139424)"""
+        intent = self.create_payment_intent("6011000990139424")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+    def test_diners_club_payment(self):
+        """Тест оплаты картой Diners Club (3056930009020004)"""
+        intent = self.create_payment_intent("3056930009020004")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+    def test_jcb_card_payment(self):
+        """Тест оплаты картой JCB (3566002020360505)"""
+        intent = self.create_payment_intent("3566002020360505")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+    def test_unionpay_card_payment(self):
+        """Тест оплаты картой UnionPay (6200000000000005)"""
+        intent = self.create_payment_intent("6200000000000005")
+
+        if isinstance(intent, dict) and "error" in intent:
+            self.fail(f"Payment failed: {intent['error']}")
+
+        self.assertEqual(intent.status, "succeeded")
+
+
+class StripePaymentScenariosTest(TestCase):
+    """Тесты различных сценариев оплаты"""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser", email="test@test.com", password="testpass123"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+    def test_payment_with_3d_secure_card(self):
+        """Тест оплаты с 3D Secure (требует подтверждения)"""
+        # Карта, требующая 3D Secure аутентификацию
+        payment_method = stripe.PaymentMethod.create(
+            type="card",
+            card={
+                "number": "4000002500003155",
+                "exp_month": 12,
+                "exp_year": 2025,
+                "cvc": "123",
+            },
+        )
+
+        intent = stripe.PaymentIntent.create(
+            amount=1000,
+            currency="rub",
+            payment_method=payment_method.id,
+            confirmation_method="manual",
+            return_url="https://example.com/return",
+        )
+
+        # Должен требовать подтверждение
+        self.assertIn(intent.status, ["requires_confirmation", "requires_action"])
+
+    def test_payment_with_insufficient_funds(self):
+        """Тест оплаты при недостатке средств"""
+        # Карта с ошибкой insufficient_funds
+        with self.assertRaises(stripe.error.CardError) as context:
+            payment_method = stripe.PaymentMethod.create(
+                type="card",
+                card={
+                    "number": "4000000000009995",
+                    "exp_month": 12,
+                    "exp_year": 2025,
+                    "cvc": "123",
+                },
+            )
+
+            stripe.PaymentIntent.create(
+                amount=1000,
+                currency="rub",
+                payment_method=payment_method.id,
+                confirm=True,
+            )
+
+        self.assertEqual(context.exception.error.code, "card_declined")
+        self.assertEqual(context.exception.error.decline_code, "insufficient_funds")
+
+    def test_payment_with_declined_card(self):
+        """Тест оплаты отклоненной картой"""
+        # Карта с ошибкой card_declined
+        with self.assertRaises(stripe.error.CardError) as context:
+            payment_method = stripe.PaymentMethod.create(
+                type="card",
+                card={
+                    "number": "4000000000000002",
+                    "exp_month": 12,
+                    "exp_year": 2025,
+                    "cvc": "123",
+                },
+            )
+
+            stripe.PaymentIntent.create(
+                amount=1000,
+                currency="rub",
+                payment_method=payment_method.id,
+                confirm=True,
+            )
+
+        self.assertEqual(context.exception.error.code, "card_declined")
+
+    def test_payment_with_expired_card(self):
+        """Тест оплаты просроченной картой"""
+        # Карта с ошибкой expired_card
+        with self.assertRaises(stripe.error.CardError) as context:
+            payment_method = stripe.PaymentMethod.create(
+                type="card",
+                card={
+                    "number": "4000000000000069",
+                    "exp_month": 12,
+                    "exp_year": 2025,
+                    "cvc": "123",
+                },
+            )
+
+            stripe.PaymentIntent.create(
+                amount=1000,
+                currency="rub",
+                payment_method=payment_method.id,
+                confirm=True,
+            )
+
+        self.assertEqual(context.exception.error.code, "card_declined")
+        self.assertEqual(context.exception.error.decline_code, "expired_card")
+
+    def test_payment_with_incorrect_cvc(self):
+        """Тест оплаты с неверным CVC кодом"""
+        # Карта с ошибкой incorrect_cvc
+        with self.assertRaises(stripe.error.CardError) as context:
+            payment_method = stripe.PaymentMethod.create(
+                type="card",
+                card={
+                    "number": "4000000000000127",
+                    "exp_month": 12,
+                    "exp_year": 2025,
+                    "cvc": "123",
+                },
+            )
+
+            stripe.PaymentIntent.create(
+                amount=1000,
+                currency="rub",
+                payment_method=payment_method.id,
+                confirm=True,
+            )
+
+        self.assertEqual(context.exception.error.code, "card_declined")
+        self.assertEqual(context.exception.error.decline_code, "incorrect_cvc")
+
+    def test_payment_success_then_create_subscription(self):
+        """Тест успешной оплаты и создания подписки"""
+        # Создаем PaymentIntent
+        payment_method = stripe.PaymentMethod.create(
+            type="card",
+            card={
+                "number": "4242424242424242",
+                "exp_month": 12,
+                "exp_year": 2025,
+                "cvc": "123",
+            },
+        )
+
+        intent = stripe.PaymentIntent.create(
+            amount=1000, currency="rub", payment_method=payment_method.id, confirm=True
+        )
+
+        self.assertEqual(intent.status, "succeeded")
+
+        # После успешной оплаты создаем подписку
+        if intent.status == "succeeded":
+            # Здесь логика создания подписки после оплаты
+            subscription = stripe.Subscription.create(
+                customer=payment_method.customer,
+                items=[{"price": "price_test"}],
+            )
+            self.assertIsNotNone(subscription)
+
+
+class StripeCheckoutTest(TestCase):
+    """Тесты Stripe Checkout сессий"""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser", email="test@test.com", password="testpass123"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+    def test_create_checkout_session(self):
+        """Тест создания Checkout сессии"""
+        session = stripe.checkout.Session.create(
+            success_url="https://example.com/success",
+            cancel_url="https://example.com/cancel",
+            payment_method_types=["card"],
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "rub",
+                        "unit_amount": 1000,
+                        "product_data": {"name": "Test Product"},
+                    },
+                    "quantity": 1,
+                }
+            ],
+            mode="payment",
+            customer_email=self.user.email,
+        )
+
+        self.assertIsNotNone(session.id)
+        self.assertIsNotNone(session.url)
+        self.assertEqual(session.mode, "payment")
+
+    def test_checkout_session_with_different_cards(self):
+        """Тест Checkout сессии с разными типами карт"""
+        cards = [
+            ("4242424242424242", "Visa"),
+            ("5555555555554444", "Mastercard"),
+            ("378282246310005", "American Express"),
+            ("6011111111111117", "Discover"),
+        ]
+
+        for card_number, card_type in cards:
+            # Создаем сессию
+            session = stripe.checkout.Session.create(
+                success_url="https://example.com/success",
+                cancel_url="https://example.com/cancel",
+                payment_method_types=["card"],
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": "usd",
+                            "unit_amount": 1000,
+                            "product_data": {"name": f"Test {card_type}"},
+                        },
+                        "quantity": 1,
+                    }
+                ],
+                mode="payment",
+                payment_method_options={
+                    "card": {"request_three_d_secure": "automatic"}
+                },
+            )
+
+            self.assertIsNotNone(session.id)
+            print(f"{card_type} checkout session created: {session.id}")

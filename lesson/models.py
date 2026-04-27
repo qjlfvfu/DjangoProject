@@ -6,6 +6,7 @@ from lesson.validators import validate_youtube_url
 
 class Course(models.Model):
     """Модель курсов"""
+
     objects = None
     name = models.CharField(max_length=255, verbose_name="Название")
     preview = models.ImageField(
@@ -21,28 +22,18 @@ class Course(models.Model):
         related_name="courses",
     )
     price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0,
-        verbose_name="Цена (в рублях)"
+        max_digits=10, decimal_places=2, default=0, verbose_name="Цена (в рублях)"
     )
     stripe_product_id = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name="Stripe Product ID"
+        max_length=255, blank=True, null=True, verbose_name="Stripe Product ID"
     )
     stripe_price_id = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name="Stripe Price ID"
+        max_length=255, blank=True, null=True, verbose_name="Stripe Price ID"
     )
     last_notification_sent = models.DateTimeField(
-        null=True, 
-        blank=True, 
-        verbose_name="Последнее уведомление отправлено"
+        null=True, blank=True, verbose_name="Последнее уведомление отправлено"
     )
+
     class Meta:
         verbose_name = "Курс"
         verbose_name_plural = "Курсы"
@@ -53,6 +44,7 @@ class Course(models.Model):
 
 class Lesson(models.Model):
     """Модель уроков"""
+
     objects = None
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="lessons")
     name = models.CharField(max_length=200, verbose_name="Название урока")
@@ -99,6 +91,7 @@ class Subscription(models.Model):
         related_name="subscribers",
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата подписки")
+    is_paid = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ["user", "course"]
