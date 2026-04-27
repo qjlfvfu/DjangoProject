@@ -1,0 +1,183 @@
+{% extends 'catalog/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'Профиль' %} - Skystore{% endblock %}
+
+{% block content %}
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">Профиль пользователя</h1>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Информация о пользователе -->
+        <div class="col-lg-9 col-md-6 col-sm-12">
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Личная информация</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'botblock:profile_edit' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <table class="table table-striped">
+                            <tr>
+                                <td class="w-25">Логин</td>
+                                <td>
+                                    <input type="text" name="username" class="form-control"
+                                           value="{{ user.username }}" placeholder="Ваш логин" required>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-25">Email</td>
+                                <td>
+                                    <input type="email" name="email" class="form-control"
+                                           value="{{ user.email }}" readonly disabled>  <!-- Сделали readonly -->
+                                    <small class="text-muted d-block">Email нельзя изменить здесь</small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-25">Имя</td>
+                                <td>
+                                    <input type="text" name="first_name" class="form-control"
+                                           value="{{ user.first_name }}" placeholder="Ваше имя">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-25">Фамилия</td>
+                                <td>
+                                    <input type="text" name="last_name" class="form-control"
+                                           value="{{ user.last_name }}" placeholder="Ваша фамилия">
+                                </td>
+                            </tr>
+                            {% if user.phone %}
+                            <tr>
+                                <td class="w-25">Телефон</td>
+                                <td>
+                                    <input type="text" name="phone" class="form-control"
+                                           value="{{ user.phone }}" placeholder="+7 (999) 123-45-67">
+                                </td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td class="w-25">Дата регистрации</td>
+                                <td>{{ user.date_joined|date:"d.m.Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="w-25">Последний вход</td>
+                                <td>{{ user.last_login|date:"d.m.Y H:i" }}</td>
+                            </tr>
+                        </table>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <button type="submit" class="btn btn-lg btn-primary">
+                                <i class="bi bi-save"></i> Сохранить изменения
+                            </button>
+                            <button type="reset" class="btn btn-lg btn-outline-secondary">
+                                <i class="bi bi-arrow-counterclockwise"></i> Сбросить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Боковая панель с действиями -->
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <!-- Аватар пользователя -->
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Аватар</h4>
+                </div>
+                <div class="card-body text-center">
+                    {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}"
+                         class="img-fluid rounded-circle mb-3" style="max-width: 150px; max-height: 150px; object-fit: cover;">
+                    {% else %}
+                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                         style="width: 150px; height: 150px;">
+                        <i class="bi bi-person-fill" style="font-size: 4rem; color: #6c757d;"></i>
+                    </div>
+                    {% endif %}
+
+                    <!-- ФОРМА ЗАГРУЗКИ АВАТАРА (ДОБАВЛЕНА) -->
+                    <form method="post" action="{% url 'botblock:upload_avatar' %}" enctype="multipart/form-data" class="mt-3">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <input type="file" name="avatar" class="form-control form-control-sm" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="bi bi-upload"></i> Загрузить аватар
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Действия</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <!-- Смена пароля -->
+                        <a href="{% url 'botblock:change_password' %}" class="btn btn-outline-warning">
+                            <i class="bi bi-key"></i> Сменить пароль
+                        </a>
+
+                        <!-- Мои товары -->
+                        <a href="{% url 'botblock:my_products' %}" class="btn btn-outline-success">
+                            <i class="bi bi-grid"></i> Мои товары
+                        </a>
+
+                        <!-- Статус аккаунта -->
+                        {% if user.is_staff %}
+                        <div class="alert alert-success mb-2 text-center">
+                            <i class="bi bi-shield-check"></i> Администратор
+                        </div>
+                        {% endif %}
+
+                        <!-- Выход - ИСПРАВЛЕННАЯ ФОРМА -->
+                        <form method="post" action="{% url 'botblock:logout' %}"
+                              onsubmit="return confirm('Выйти из аккаунта?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-box-arrow-right"></i> Выйти
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Уведомления об ошибках/успехе -->
+{% if messages %}
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    {% for message in messages %}
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header {% if message.tags %}bg-{{ message.tags }}{% endif %}">
+            <strong class="me-auto">Уведомление</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            {{ message }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+// Автоматическое скрытие уведомлений через 5 секунд
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        var toasts = document.querySelectorAll('.toast');
+        toasts.forEach(function(toast) {
+            toast.classList.remove('show');
+        });
+    }, 5000);
+});
+</script>
+{% endif %}
+{% endblock %}

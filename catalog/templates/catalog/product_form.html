@@ -1,0 +1,97 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Добавить товар - Skystore{% endblock %}
+
+{% block header %}
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">Добавить новый товар</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-4 box-shadow">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                {{ form.name.label }}
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="text-danger">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                {{ form.description.label }}
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="text-danger">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.price.id_for_label }}" class="form-label">
+                                {{ form.price.label }}
+                            </label>
+                            {{ form.price }}
+                            {% if form.price.errors %}
+                            <div class="text-danger">{{ form.price.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">
+                                {{ form.category.label }}
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                            <div class="text-danger">{{ form.category.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_picture" class="form-label">Изображение товара</label>
+                            {{ form.picture }}
+
+                            {% if form.instance.picture %}
+                            <div class="mt-2">
+                                <p>Текущее изображение:</p>
+                                <img src="{{ form.instance.picture.url }}"
+                                     alt="{{ form.instance.name }}"
+                                     class="img-thumbnail"
+                                     style="max-height: 150px;">
+                            </div>
+                            {% endif %}
+
+                            {% if form.picture.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.picture.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <div class="form-text">
+                                Загрузите изображение товара (рекомендуемый размер: 800x600px)
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-lg btn-primary">Сохранить товар</button>
+                            <a href="{% url 'catalog:product_catalog' %}" class="btn btn-lg btn-outline-secondary">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

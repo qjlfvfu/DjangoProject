@@ -1,0 +1,41 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Удаление товара - Skystore{% endblock %}
+
+{% block header %}
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">Удаление товара</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mb-4 box-shadow">
+                <div class="card-body text-center">
+                    <h4 class="mb-4">Вы уверены, что хотите удалить товар?</h4>
+                    
+                    <div class="alert alert-warning">
+                        <h5>"{{ object.name }}"</h5>
+                        <p class="mb-0">Цена: {{ object.price }} руб.</p>
+                        <p class="mb-0">Категория: {{ object.category.name }}</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-lg btn-danger">
+                                Да, удалить
+                            </button>
+                            <a href="{% url 'catalog:product_detail' object.pk %}" class="btn btn-lg btn-outline-secondary">
+                                Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

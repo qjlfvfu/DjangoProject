@@ -1,0 +1,72 @@
+{% extends 'blog/base-blog.html' %}
+{% load static %}
+
+{% block title %}{{ blog.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Навигация -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'blog:blog_list' %}">
+                    <i class="fas fa-home"></i> Блог
+                </a>
+            </li>
+            <li class="breadcrumb-item active">{{ blog.name|truncatechars:30 }}</li>
+        </ol>
+    </nav>
+    
+    <!-- Статья -->
+    <article>
+        <header class="mb-4">
+            <h1 class="fw-bold">{{ blog.name }}</h1>
+            
+            <!-- Мета-информация -->
+            <div class="d-flex flex-wrap align-items-center text-muted mb-3">
+                {% if blog.author %}
+                <div class="me-4">
+                    <i class="fas fa-user"></i> {{ blog.author.username }}
+                </div>
+                {% endif %}
+                <div class="me-4">
+                    <i class="fas fa-calendar"></i> {{ blog.created_at|date:"d E Y, H:i" }}
+                </div>
+                <div class="me-4">
+                    <i class="fas fa-eye"></i> {{ blog.views_count }} просмотров
+                </div>
+                <div>
+                    <i class="fas fa-clock"></i> {{ blog.reading_time }}
+                </div>
+            </div>
+            
+            <!-- Превью -->
+            {% if blog.preview %}
+            <img src="{{ blog.preview.url }}" class="img-fluid rounded mb-4" 
+                 alt="{{ blog.name }}" style="max-height: 400px; width: 100%; object-fit: cover;">
+            {% endif %}
+        </header>
+        
+        <!-- Содержимое -->
+        <div class="blog-content mb-5">
+            {{ blog.description|linebreaks }}
+        </div>
+        
+        <!-- Действия -->
+        <div class="d-flex justify-content-between border-top pt-3">
+            <div>
+                <a href="{% url 'blog:blog_delete' blog.slug %}" class="btn btn-outline-danger">
+                    <i class="fas fa-trash"></i> Удалить
+                </a>
+                {% endif %}
+            </div>
+            
+            <div>
+                <a href="{% url 'blog:blog_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад к списку
+                </a>
+            </div>
+        </div>
+    </article>
+</div>
+{% endblock %}
